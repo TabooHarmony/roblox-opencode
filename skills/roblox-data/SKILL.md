@@ -25,14 +25,18 @@ Player Leaves -->  Server saves to DataStore     -->  Data persists for next ses
 | Approach | Best For | Complexity |
 |----------|----------|------------|
 | Raw DataStoreService | Simple games, prototypes | Low |
-| ProfileStore | Production games, session safety | Medium |
+| **ProfileStore** | **Production games (USE THIS)** | Medium |
 | Custom wrapper | Specific advanced requirements | High |
+
+> **Use ProfileStore for any game that will ship.** Raw DataStore examples in sections 2-3 exist to explain the underlying system. Do NOT implement manual auto-save, session locking, BindToClose handlers, or retry logic — ProfileStore handles all of this automatically. Section 4 is the production pattern.
 
 **Prerequisite:** Enable API Services in Roblox Studio under **Game Settings > Security > Enable Studio Access to API Services**. Without this, DataStore calls will fail in Studio testing.
 
 ---
 
-## 2. DataStoreService Basics
+## 2. DataStoreService Basics (Reference Only)
+
+> **This section explains the underlying API. For production games, skip to section 4 (ProfileStore).**
 
 DataStoreService is the built-in Roblox API for cloud key-value storage. Each DataStore is identified by a name, and each entry is identified by a string key.
 
@@ -69,7 +73,7 @@ local DEFAULT_DATA = {
 local playerDataCache: { [Player]: { [string]: any } } = {}
 
 local function loadPlayerData(player: Player): { [string]: any }?
-    local key = "Player_" .. player.UserId
+    local key = `Player_{player.UserId}`
 
     local success, result = pcall(function()
         return playerDataStore:GetAsync(key)
@@ -97,7 +101,7 @@ local function savePlayerData(player: Player): boolean
         return false
     end
 
-    local key = "Player_" .. player.UserId
+    local key = `Player_{player.UserId}`
 
     local success, err = pcall(function()
         playerDataStore:UpdateAsync(key, function(_oldData)
@@ -158,7 +162,9 @@ end)
 
 ---
 
-## 3. Leaderstats Pattern
+## 3. Leaderstats Pattern (Reference Only)
+
+> **This section uses raw DataStore for illustration. In production, use ProfileStore (section 4) for persistence and set up leaderstats from the profile data.**
 
 The "leaderstats" pattern is the standard Roblox convention for showing player stats on the in-game leaderboard (the tab/playerlist).
 
@@ -203,7 +209,7 @@ end
 
 local function savePlayer(player: Player)
     local data = getLeaderstatsData(player)
-    local key = "Player_" .. player.UserId
+    local key = `Player_{player.UserId}`
 
     local success, err = pcall(function()
         dataStore:UpdateAsync(key, function()
@@ -217,7 +223,7 @@ local function savePlayer(player: Player)
 end
 
 Players.PlayerAdded:Connect(function(player: Player)
-    local key = "Player_" .. player.UserId
+    local key = `Player_{player.UserId}`
 
     local success, data = pcall(function()
         return dataStore:GetAsync(key)
@@ -359,7 +365,7 @@ end
 
 Players.PlayerAdded:Connect(function(player: Player)
     local profile = ProfileStore:LoadProfileAsync(
-        "Player_" .. player.UserId,
+        `Player_{player.UserId}`,
         "ForceLoad" -- Wait until the session lock is acquired
     )
 
@@ -629,7 +635,7 @@ return DataMigrations
 
 ```luau
 -- After loading the profile, before using the data:
-local profile = ProfileStore:LoadProfileAsync("Player_" .. player.UserId, "ForceLoad")
+local profile = ProfileStore:LoadProfileAsync(`Player_{player.UserId}`, "ForceLoad")
 if profile then
     profile.Data = DataMigrations.migrate(profile.Data)
     profile:Reconcile() -- Fill in any remaining missing defaults
@@ -718,7 +724,7 @@ local function displayLeaderboard(surfaceGui: SurfaceGui, entries: { { UserId: n
 
         if success then
             local row = Instance.new("Frame")
-            row.Name = "Rank_" .. entry.Rank
+            row.Name = `Rank_{entry.Rank}`
             row.Size = UDim2.new(1, 0, 0, 30)
             row.LayoutOrder = entry.Rank
             row.Parent = container
@@ -831,9 +837,11 @@ local totalDefeated = incrementGlobalCounter("TotalEnemiesDefeated", 1)
 
 ## 10. Best Practices
 
-### Auto-Save Interval
+> **If using ProfileStore (recommended), sections 10.1 through 10.4 are handled automatically.** You only need to worry about these if you're building on raw DataStoreService. The patterns below are shown for understanding and for the rare case where raw DataStore is appropriate.
 
-Save every 5 minutes (300 seconds). This balances data safety against rate limits.
+### 10.1 Auto-Save Interval (ProfileStore: automatic)
+
+ProfileStore handles auto-save internally. If using raw DataStore, save every 5 minutes:
 
 ```luau
 local AUTO_SAVE_INTERVAL = 300
@@ -848,9 +856,9 @@ task.spawn(function()
 end)
 ```
 
-### Save on PlayerRemoving
+### 10.2 Save on PlayerRemoving (ProfileStore: automatic via Release)
 
-Always save when a player disconnects:
+ProfileStore saves and releases the session lock when `profile:Release()` is called. If using raw DataStore:
 
 ```luau
 Players.PlayerRemoving:Connect(function(player: Player)
@@ -859,14 +867,13 @@ Players.PlayerRemoving:Connect(function(player: Player)
 end)
 ```
 
-### BindToClose Handler (Critical)
+### 10.3 BindToClose Handler (ProfileStore: automatic)
 
-`game:BindToClose` fires when the server is shutting down. You have **30 seconds** to save all data before the server terminates. Use `task.spawn` for parallel saves.
+ProfileStore handles shutdown saves automatically. If using raw DataStore, `game:BindToClose` fires when the server shuts down. You have **30 seconds** to save all data before the server terminates. Use `task.spawn` for parallel saves.
 
 ```luau
--- Complete BindToClose handler
+-- Only needed with raw DataStore
 game:BindToClose(function()
-    -- If running in Studio, don't wait long
     if game:GetService("RunService"):IsStudio() then
         task.wait(1)
         return
@@ -876,34 +883,25 @@ game:BindToClose(function()
     local allPlayers = Players:GetPlayers()
     local remaining = #allPlayers
 
-    if remaining == 0 then
-        return
-    end
+    if remaining == 0 then return end
 
     for _, player in allPlayers do
         task.spawn(function()
-            -- Save player data
             savePlayerData(player)
-
             remaining -= 1
-            if remaining <= 0 then
-                finished:Fire()
-            end
+            if remaining <= 0 then finished:Fire() end
         end)
     end
 
-    -- Wait for all saves to complete, or timeout after 25 seconds
-    -- (leave 5-second buffer before the 30-second hard limit)
-    task.delay(25, function()
-        finished:Fire()
-    end)
-
+    task.delay(25, function() finished:Fire() end)
     finished.Event:Wait()
     finished:Destroy()
 end)
 ```
 
-### Retry Failed Saves
+### 10.4 Retry Failed Saves (ProfileStore: built-in)
+
+ProfileStore has built-in retry with exponential backoff. If using raw DataStore:
 
 ```luau
 local MAX_RETRIES = 3
@@ -912,13 +910,11 @@ local RETRY_DELAY = 2
 local function saveWithRetry(player: Player): boolean
     for attempt = 1, MAX_RETRIES do
         local success = savePlayerData(player)
-        if success then
-            return true
-        end
+        if success then return true end
 
         if attempt < MAX_RETRIES then
             warn(`[DataStore] Retry {attempt}/{MAX_RETRIES} for {player.Name}`)
-            task.wait(RETRY_DELAY * attempt) -- Exponential-ish backoff
+            task.wait(RETRY_DELAY * attempt)
         end
     end
 
@@ -927,34 +923,16 @@ local function saveWithRetry(player: Player): boolean
 end
 ```
 
-### Validate Data Before Saving
+### 10.5 Validate Data Before Saving (always relevant)
+
+This applies regardless of whether you use ProfileStore or raw DataStore. Validate before writing:
 
 ```luau
 local function validateData(data: { [string]: any }): boolean
-    if typeof(data) ~= "table" then
-        return false
-    end
-
-    -- Check critical fields exist and have correct types
-    if typeof(data.Cash) ~= "number" or data.Cash < 0 then
-        return false
-    end
-
-    if typeof(data.Level) ~= "number" or data.Level < 1 then
-        return false
-    end
-
+    if typeof(data) ~= "table" then return false end
+    if typeof(data.Cash) ~= "number" or data.Cash < 0 then return false end
+    if typeof(data.Level) ~= "number" or data.Level < 1 then return false end
     return true
-end
-
-local function safeSave(player: Player)
-    local data = playerDataCache[player]
-    if not data or not validateData(data) then
-        warn(`[DataStore] Invalid data for {player.Name}, skipping save`)
-        return
-    end
-
-    savePlayerData(player)
 end
 ```
 
@@ -969,7 +947,7 @@ end
 -- DO NOT DO THIS: saving on every coin pickup
 coinTouched:Connect(function(player)
     player.Data.Cash += 1
-    dataStore:SetAsync("Player_" .. player.UserId, player.Data) -- Rate limit hit
+dataStore:SetAsync(`Player_{player.UserId}`, player.Data) -- Rate limit hit
 end)
 ```
 
@@ -1076,7 +1054,7 @@ Without session locking (i.e., using raw DataStore), the following scenario caus
 3. Server B loads stale data (Server A hasn't finished writing yet).
 4. Server A finishes saving. Server B later saves its stale copy, overwriting Server A's save.
 
-**Mitigation:** Use ProfileStore (preferred) or implement manual session locking with `UpdateAsync` by writing a lock field containing the server's `game.JobId` and checking it before loading.
+**This is why you use ProfileStore.** It handles session locking automatically. If you must use raw DataStore, implement manual session locking with `UpdateAsync` by writing a lock field containing the server's `game.JobId` and checking it before loading.
 
 ### Studio Testing Gotchas
 
@@ -1087,7 +1065,7 @@ Without session locking (i.e., using raw DataStore), the following scenario caus
 ```luau
 local RunService = game:GetService("RunService")
 local PREFIX = RunService:IsStudio() and "Dev_" or ""
-local dataStore = DataStoreService:GetDataStore(PREFIX .. "PlayerData_v1")
+local dataStore = DataStoreService:GetDataStore(`{PREFIX}PlayerData_v1`)
 ```
 
 ### Other Pitfalls
