@@ -1,0 +1,16 @@
+{
+  "name": "roblox-pi",
+  "version": "0.1.0",
+  "description": "Opinionated Pi harness for Roblox/Luau development",
+  "keywords": ["pi-package"],
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/TabooHarmony/roblox-pi"
+  },
+  "pi": {
+    "skills": ["./skills"],
+    "prompts": ["./prompts"],
+    "extensions": ["./extensions/luau-check/index.ts"]
+  }
+}
