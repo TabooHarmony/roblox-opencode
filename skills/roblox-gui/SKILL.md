@@ -1532,3 +1532,309 @@ button.MouseButton1Click:Connect(handler)
 -- GOOD: works on mouse, touch, and gamepad
 button.Activated:Connect(handler)
 ```
+
+---
+
+## 11. Mobile-First Design
+
+78% of Roblox traffic is mobile. Design for touch first, adapt for desktop/gamepad.
+
+### Touch Targets
+
+- Minimum touch target: **44×44 px** (Apple guideline) or **48×48 dp** (Material Design)
+- Buttons smaller than 44px are frustrating on phones
+- Scale buttons 1.4× on touch devices:
+
+```luau
+local UserInputService = game:GetService("UserInputService")
+
+local function isTouchDevice(): boolean
+    return UserInputService.TouchEnabled and not UserInputService.KeyboardEnabled
+end
+
+-- Apply at UI creation time
+if isTouchDevice() then
+    button.Size = UDim2.new(button.Size.X.Scale * 1.4, 0, button.Size.Y.Scale * 1.4, 0)
+end
+```
+
+### PreferredInput API (2025+)
+
+Modern approach to input detection. Use instead of checking individual booleans:
+
+```luau
+local preferred = UserInputService.PreferredInput
+-- Enum.PreferredInput values:
+--   Touch, MouseAndKeyboard, Gamepad, None
+
+if preferred == Enum.PreferredInput.Touch then
+    -- enlarge buttons, simplify layout
+elseif preferred == Enum.PreferredInput.Gamepad then
+    -- highlight focused element, add navigation hints
+end
+
+UserInputService:GetPropertyChangedSignal("PreferredInput"):Connect(function()
+    -- re-adapt UI when input method changes
+end)
+```
+
+### Safe Areas and Screen Real Estate
+
+- Top bar takes **58px**. Use `ScreenGui.IgnoreGuiInset = true` for fullscreen, but don't put critical content behind it.
+- Bottom of screen has virtual controls on mobile. Keep interactive elements above the bottom 100px.
+- Use the **Device Emulator** in Studio (View → Device Emulator) to test phone/tablet views before shipping.
+
+### Mobile Layout Rules
+
+- Prefer vertical layouts over horizontal on mobile (scrolling down is natural)
+- Avoid sidebars — use bottom sheets or full-screen overlays instead
+- Use `UIScale` to zoom entire UI proportionally on small screens:
+
+```luau
+local uiScale = Instance.new("UIScale")
+uiScale.Scale = math.min(1, camera.ViewportSize.X / 1080) -- reference width
+uiScale.Parent = screenGui
+```
+
+### Gamepad Navigation
+
+For console players:
+
+```luau
+local GuiService = game:GetService("GuiService")
+
+-- Set the initially selected object when opening a menu
+GuiService.SelectedObject = myButton
+
+-- On menu close, clear selection
+GuiService.SelectedObject = nil
+```
+
+Source: Roblox Adaptive Design Guidelines (create.roblox.com/docs/production/publishing/adaptive-design)
+
+---
+
+## 12. Text Handling
+
+### AutomaticSize vs TextScaled
+
+**Do NOT use `TextScaled = true`.** It makes text unreadably small on mobile and truncates text that doesn't fit.
+
+Use `AutomaticSize` instead. It resizes the UI element to fit the text at a consistent, readable font size:
+
+```luau
+-- BAD: text scales to fit, becomes unreadable on small screens
+label.TextScaled = true
+
+-- GOOD: label grows/shrinks to fit text at fixed readable size
+label.TextSize = 16
+label.TextWrapped = true
+label.AutomaticSize = Enum.AutomaticSize.Y -- height adjusts to content
+```
+
+### UITextSizeConstraint
+
+If you must use `TextScaled`, always add a constraint:
+
+```luau
+local textSizeConstraint = Instance.new("UITextSizeConstraint")
+textSizeConstraint.MaxTextSize = 24
+textSizeConstraint.MinTextSize = 12 -- NEVER below 9 (official hard rule)
+textSizeConstraint.Parent = label
+```
+
+### Text Truncation
+
+```luau
+label.TextTruncate = Enum.TextTruncate.AtEnd -- shows "..." when text overflows
+label.TextWrapped = true -- wrap instead of truncate for multi-line content
+```
+
+### Calculating Text Size Programmatically
+
+```luau
+local TextService = game:GetService("TextService")
+
+local bounds = TextService:GetTextSize(
+    "Hello World",
+    16,                -- TextSize
+    Enum.Font.Gotham,
+    Vector2.new(200, math.huge) -- max width, unlimited height
+)
+-- bounds.X = actual width, bounds.Y = actual height
+```
+
+Source: Roblox Size Modifiers & Constraints docs (create.roblox.com/docs/ui/size-modifiers)
+
+---
+
+## 13. UI Styling (StyleEditor)
+
+Roblox ships a CSS-like styling system (2025+). Use it for consistent theming.
+
+### Style Tokens
+
+Named values (like CSS variables). Define once, reference everywhere.
+
+### Style Rules with Selectors
+
+```luau
+-- Style rules can target by class, tag, name, state, modifier, query
+-- Similar to CSS selectors
+```
+
+### When to Use StyleEditor vs Code Themes
+
+| Approach | Best For |
+|----------|----------|
+| Studio StyleEditor | Static UI built visually, team collaboration on design |
+| Code-based UITheme module | Dynamic UI built in code, programmatic theming |
+
+Both can coexist. StyleEditor is the "build in Studio" answer; code themes are the "build in code" answer.
+
+Source: Roblox UI Styling docs (create.roblox.com/docs/ui/styling)
+
+---
+
+## 14. ScrollingFrame Patterns
+
+### AutomaticCanvasSize (Use This)
+
+```luau
+-- BAD: manually calculating canvas size
+scrollFrame.CanvasSize = UDim2.new(0, 0, 0, listLayout.AbsoluteContentSize.Y)
+
+-- GOOD: engine handles it automatically
+scrollFrame.AutomaticCanvasSize = Enum.AutomaticSize.Y
+scrollFrame.ScrollingDirection = Enum.ScrollingDirection.Y
+```
+
+### ScrollingFrame + UIListLayout
+
+The most common pattern — a scrollable list:
+
+```luau
+local scrollFrame = Instance.new("ScrollingFrame")
+scrollFrame.Size = UDim2.new(1, 0, 1, 0)
+scrollFrame.BackgroundTransparency = 1
+scrollFrame.ScrollBarThickness = 6
+scrollFrame.AutomaticCanvasSize = Enum.AutomaticSize.Y
+scrollFrame.ScrollingDirection = Enum.ScrollingDirection.Y
+scrollFrame.Parent = container
+
+local listLayout = Instance.new("UIListLayout")
+listLayout.FillDirection = Enum.FillDirection.Vertical
+listLayout.Padding = UDim.new(0, 8)
+listLayout.SortOrder = Enum.SortOrder.LayoutOrder
+listLayout.Parent = scrollFrame
+
+-- Add items as children of scrollFrame
+-- They auto-arrange vertically, scrollFrame auto-sizes
+```
+
+### ScrollingFrame + UIGridLayout
+
+For scrollable grids (inventory, shop):
+
+```luau
+local scrollFrame = Instance.new("ScrollingFrame")
+scrollFrame.AutomaticCanvasSize = Enum.AutomaticSize.Y
+scrollFrame.ScrollingDirection = Enum.ScrollingDirection.Y
+scrollFrame.Parent = container
+
+local gridLayout = Instance.new("UIGridLayout")
+gridLayout.CellSize = UDim2.new(0, 80, 0, 80)
+gridLayout.CellPadding = UDim2.new(0, 8, 0, 8)
+gridLayout.FillDirectionMaxCells = 4 -- 4 columns
+gridLayout.SortOrder = Enum.SortOrder.LayoutOrder
+gridLayout.Parent = scrollFrame
+```
+
+### Elastic Overscroll
+
+The bouncy effect on iOS/Android. Enabled by default. Disable if unwanted:
+
+```luau
+scrollFrame.ElasticBehavior = Enum.ElasticBehavior.Never
+```
+
+Source: Roblox Scrolling Frames docs (create.roblox.com/docs/ui/scrolling-frames)
+
+---
+
+## 15. Reactive UI Frameworks
+
+For complex UI with dynamic state, consider a reactive framework instead of manual Instance manipulation.
+
+### Fusion (dphfox/Fusion, MIT, 764★)
+
+The gold standard for reactive Roblox UI. Declarative syntax with state management:
+
+```luau
+local Fusion = require(ReplicatedStorage.Fusion)
+local New, Value, Computed, Children = Fusion.New, Fusion.Value, Fusion.Computed, Fusion.Children
+
+local count = Value(0)
+
+local counterGui = New("ScreenGui")({
+    [Children] = New("TextLabel")({
+        Text = Computed(function()
+            return "Count: " .. count:get()
+        end),
+        Size = UDim2.new(0, 200, 0, 50),
+    })
+})
+
+-- Update state, UI re-renders automatically
+count:set(count:get() + 1)
+```
+
+When the state changes, only the affected properties re-render. No manual updates needed.
+
+### Vide (centau/vide, MIT, 270★)
+
+Solid.js-inspired. Lighter weight, more concise:
+
+```luau
+local vide = require(ReplicatedStorage.vide)
+local create, source, effect = vide.create, vide.source, vide.effect
+
+local count = source(0)
+
+local gui = create("ScreenGui")({
+    create("TextLabel")({
+        Text = function() return "Count: " .. count() end,
+        Size = UDim2.new(0, 200, 0, 50),
+    })
+})
+```
+
+### When to Use Reactive Frameworks
+
+| Scenario | Approach |
+|----------|----------|
+| Simple HUD (health bar, ammo) | Manual Instance manipulation. No framework needed. |
+| Shop with filtering/sorting | Fusion or Vide. State changes drive UI updates. |
+| Settings menu with toggles | Either works. Manual if <5 toggles, reactive if more. |
+| Complex inventory with drag-and-drop | Fusion. State management pays off at this complexity. |
+
+### Don't Over-Engineer
+
+If the UI is simple (a few labels, a button, a health bar), manual Instance manipulation is fine. Don't pull in Fusion for a HUD. The framework pays for itself when state changes are frequent and UI is complex.
+
+---
+
+## Sources
+
+- Roblox Adaptive Design Guidelines: create.roblox.com/docs/production/publishing/adaptive-design
+- Roblox Size Modifiers & Constraints: create.roblox.com/docs/ui/size-modifiers
+- Roblox UI Styling: create.roblox.com/docs/ui/styling
+- Roblox Scrolling Frames: create.roblox.com/docs/ui/scrolling-frames
+- Roblox List & Flex Layouts: create.roblox.com/docs/ui/list-flex-layouts
+- Roblox Grid & Table Layouts: create.roblox.com/docs/ui/grid-table-layouts
+- DevForum: Designing UI - Tips and Best Practices (Roblox Staff)
+- DevForum: Design Mobile First
+- DevForum: GUI Optimization Tips
+- Fusion: github.com/dphfox/Fusion (MIT)
+- Vide: github.com/centau/vide (MIT)
+- brockmartin/roblox-game-skill (MIT) — base content
