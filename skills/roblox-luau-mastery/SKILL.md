@@ -29,7 +29,7 @@ The harness ships vendored copies of these libraries. Use them instead of raw Ro
 
 - **Promise** (evaera/roblox-lua-promise) — async control flow, retry, chaining. Use instead of raw coroutines for async work.
 - **Trove** (Sleitnick/RbxUtil) — cleanup/lifecycle management. Use instead of manually tracking connections and instances.
-- **GoodSignal** (stravant/goodsignal) — typed custom signals. Use instead ofBindableEvent for module-to-module communication.
+- **Signal** (Sleitnick/RbxUtil) — typed custom signals. Use instead of BindableEvent for module-to-module communication.
 - **Comm** (Sleitnick/RbxUtil) — typed client-server remotes. Use instead of raw RemoteEvent/RemoteFunction.
 - **Component** (Sleitnick/RbxUtil) — CollectionService tag binding with lifecycle. Use instead of manual tag listeners.
 - **ProfileStore** (loleris/MadStudioRoblox) — session-locked DataStore with retry. Use instead of raw DataStoreService.

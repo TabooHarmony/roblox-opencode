@@ -265,7 +265,7 @@ After `wally install`, packages appear in a `Packages/` directory. Your `project
 | `madstudioroblox/profileservice` | madstudio | Robust DataStore wrapper             |
 | `roblox/testez`      | Roblox           | BDD-style testing framework                  |
 | `evaera/cmdr`        | evaera           | In-game admin command framework              |
-| `Sleitnick/RbxUtil` | Sleitnick        | Signal (same as stravant/goodsignal)         |              |
+| `Sleitnick/RbxUtil` | Sleitnick        | Signal, Trove, Comm, Component, etc.         |              |
 | `sleitnick/table-util`| sleitnick       | Table utility functions                      |
 
 ### Publishing Your Own Packages
