@@ -51,7 +51,7 @@ For everything else, load the skill whose description best matches the task.
 - Never suggest asset IDs. Never recommend free-model code (ModuleScripts, Scripts, LocalScripts).
 - Free models OK strictly for art assets (Mesh, Texture, Sound, Animation).
 - Before any LoadAsset: walk user through audit — inspect children, check for getfenv/loadstring/HttpService/suspicious RemoteEvents.
-- Vendored libraries (ProfileStore, Trove, GoodSignal, Promise, Comm, Component) are the only pre-written code the agent may place.
+- Vendored libraries (ProfileStore, Trove, Signal (RbxUtil), Promise, Comm, Component) are the only pre-written code the agent may place.
 
 ## 6. Verification
 
@@ -67,7 +67,7 @@ Do not prefix verified responses with "Verified: ..." — that noise trains user
 
 ## 8. Tiered Library Policy
 
-**Canonical six** (vendored, auto-placed with mention): ProfileStore, Trove, GoodSignal, Promise, Comm, Component.
+**Canonical six** (vendored, auto-placed with mention): ProfileStore, Trove, Signal (RbxUtil), Promise, Comm, Component.
 - Agent mentions the choice. User can revert or say "use my own."
 - Before auto-placing, query context-mode for existing equivalents. If found, skip auto-place and mention why.
 

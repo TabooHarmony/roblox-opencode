@@ -38,7 +38,7 @@ Note: "Standard layout dropped. Rename or restructure to taste."
 The agent scans the project via context-mode index. Detect existing patterns dynamically:
 
 - What save system is used? (ProfileStore, raw DataStore, custom wrapper)
-- What signal/event library? (GoodSignal, custom, RBXScriptSignal)
+- What signal/event library? (Signal (RbxUtil), custom, RBXScriptSignal)
 - What component system? (CollectionService tags, Knit, custom)
 - Naming conventions? (PascalCase modules, camelCase locals, etc.)
 - Service architecture? (singleton services, flat scripts, framework)
