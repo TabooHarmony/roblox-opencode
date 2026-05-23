@@ -329,23 +329,13 @@ local PROFILE_TEMPLATE = {
 
 ### Default Values for New Fields
 
-When you add new fields, existing players will not have them. Use `Reconcile()` (ProfileStore) or manual merging (raw DataStore) to fill in defaults:
+When you add new fields, existing players won't have them. **ProfileStore's `Reconcile()` handles this automatically** — it fills in any missing fields from your PROFILE_TEMPLATE. Call it after loading:
 
 ```luau
--- Manual merge approach (raw DataStore)
-local function applyDefaults(data: { [string]: any }, defaults: { [string]: any })
-    for key, default in defaults do
-        if data[key] == nil then
-            if typeof(default) == "table" then
-                data[key] = table.clone(default)
-            else
-                data[key] = default
-            end
-        end
-    end
-    return data
-end
+profile:Reconcile() -- Fills missing fields from template
 ```
+
+No manual merge code needed when using ProfileStore.
 
 ### Type Safety Tips
 
@@ -438,7 +428,7 @@ return DataMigrations
 
 ```luau
 -- After loading the profile, before using the data:
-local profile = ProfileStore:LoadProfileAsync(`Player_{player.UserId}`, "ForceLoad")
+local profile = PlayerStore:LoadProfileAsync(`Player_{player.UserId}`, "ForceLoad")
 if profile then
     profile.Data = DataMigrations.migrate(profile.Data)
     profile:Reconcile() -- Fill in any remaining missing defaults
