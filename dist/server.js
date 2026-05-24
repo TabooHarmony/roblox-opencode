@@ -24,7 +24,7 @@ var RobloxOpenCode = async () => {
   return {
     tool: {
       roblox_setup: tool({
-        description: "One-time project setup for roblox-opencode. Copies 15 skills and vendor libraries (rbxutil, profilestore, promise, testez, t) to the project, writes luau-lsp config to opencode.json, and writes the core Roblox agent instructions to AGENTS.md. Run this when first opening a Roblox project.",
+        description: "One-time project setup for roblox-opencode. Copies 16 skills and vendor libraries (rbxutil, profilestore, promise, testez, t) to the project, writes luau-lsp config to opencode.json, and writes the core Roblox agent instructions to AGENTS.md. Run this when first opening a Roblox project.",
         args: {},
         async execute(_args, context) {
           if (!context.directory) {
@@ -43,7 +43,7 @@ async function runSetup(directory) {
   const projectDir = directory;
   const steps = [];
   steps.push({
-    name: "Copy 15 skills to .opencode/skills/",
+    name: "Copy 16 skills to .opencode/skills/",
     fn: () => {
       const src = join(pkgDir, "skills");
       const dest = join(projectDir, ".opencode", "skills");

@@ -20,6 +20,7 @@ test("runSetup copies skills, vendor, config, and AGENTS.md", async () => {
     // Skills copied
     assert.ok(existsSync(join(dir, ".opencode", "skills", "roblox-luau-mastery", "SKILL.md")))
     assert.ok(existsSync(join(dir, ".opencode", "skills", "roblox-networking", "SKILL.md")))
+    assert.ok(existsSync(join(dir, ".opencode", "skills", "roblox-analytics", "SKILL.md")))
 
     // Vendor copied to .opencode/vendor/
     assert.ok(existsSync(join(dir, ".opencode", "vendor", "profilestore", "init.luau")))

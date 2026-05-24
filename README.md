@@ -18,7 +18,7 @@ Then run `/setup-game` in your project to configure.
 
 ## What's included
 
-**15 skills** (loaded on-demand by the AI):
+**16 skills** (loaded on-demand by the AI):
 - roblox-luau-mastery — Luau syntax, idioms, type system
 - roblox-gui — UI layout, mobile-first design, reactive frameworks
 - roblox-animation-vfx — Animation, particles, effects
@@ -31,6 +31,7 @@ Then run `/setup-game` in your project to configure.
 - roblox-sharp-edges — 12 production footguns by severity
 - roblox-monetization — GamePasses, DevProducts, TOS compliance
 - roblox-sync — Script Sync setup and troubleshooting
+- roblox-analytics — AnalyticsService, custom events, economy tracking, funnels
 - roblox-code-review — Review with security/performance/monetization lenses
 - roblox-debug — Iterative debug loop for Luau/Roblox issues
 - roblox-publish-checklist — Pre-ship verification gauntlet
