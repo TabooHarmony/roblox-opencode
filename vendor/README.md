@@ -79,3 +79,6 @@ local Component = require(game.ReplicatedStorage.Packages.Component)
 -- ProfileStore (server-only, placed in ServerScriptService)
 local ProfileStore = require(game.ServerScriptService.Packages.ProfileStore) -- profilestore/init.luau
 ```
+
+Note: Vendor source lives in `.opencode/vendor/` on disk. The require paths above
+reference where Script Sync maps them in the DataModel — not the filesystem path.

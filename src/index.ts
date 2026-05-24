@@ -1,6 +1,8 @@
 import type { Plugin } from "@opencode-ai/plugin"
 import { tool } from "@opencode-ai/plugin"
+import { fileURLToPath } from "node:url"
 
+// IMPORTANT: Keep in sync with package.json "version" — mismatches cause duplicate AGENTS.md blocks on upgrade
 const VERSION = "1.0.0"
 const MARKER_BEGIN = `<!-- roblox-opencode ${VERSION} BEGIN — managed block, edits inside will be overwritten -->`
 const MARKER_END = "<!-- roblox-opencode END -->"
@@ -17,7 +19,7 @@ export const RobloxOpenCode: Plugin = async () => {
     const { join } = await import("path")
     const os = await import("os")
 
-    const pkgDir = join(import.meta.dirname ?? new URL(".", import.meta.url).pathname, "..")
+    const pkgDir = join(import.meta.dirname ?? fileURLToPath(new URL(".", import.meta.url)), "..")
     const srcDir = join(pkgDir, "commands")
     const destDir = join(os.homedir(), ".config", "opencode", "commands")
 
@@ -38,6 +40,9 @@ export const RobloxOpenCode: Plugin = async () => {
         description: "One-time project setup for roblox-opencode. Copies 15 skills and vendor libraries (rbxutil, profilestore, promise, testez, t) to the project, writes luau-lsp config to opencode.json, and writes the core Roblox agent instructions to AGENTS.md. Run this when first opening a Roblox project.",
         args: {},
         async execute(_args, context) {
+          if (!context.directory) {
+            return [{ step: "pre-check", status: "error", error: "No project directory. Open a project folder first." }]
+          }
           return await runSetup(context.directory)
         },
       }),
@@ -53,7 +58,7 @@ export async function runSetup(directory: string) {
   const { existsSync, mkdirSync, readFileSync, writeFileSync, cpSync } = await import("fs")
   const { join } = await import("path")
 
-  const pkgDir = join(import.meta.dirname ?? new URL(".", import.meta.url).pathname, "..")
+  const pkgDir = join(import.meta.dirname ?? fileURLToPath(new URL(".", import.meta.url)), "..")
   const projectDir = directory
 
   const steps: { name: string; fn: () => void }[] = []
@@ -66,7 +71,7 @@ export async function runSetup(directory: string) {
       const dest = join(projectDir, ".opencode", "skills")
       if (!existsSync(src)) throw new Error(`skills/ not found in plugin at ${src}`)
       mkdirSync(dest, { recursive: true })
-      cpSync(src, dest, { recursive: true })
+      cpSync(src, dest, { recursive: true, force: true })
     },
   })
 
@@ -75,10 +80,10 @@ export async function runSetup(directory: string) {
     name: "Copy vendor libraries to project",
     fn: () => {
       const src = join(pkgDir, "vendor")
-      const dest = join(projectDir, "vendor")
+      const dest = join(projectDir, ".opencode", "vendor")
       if (!existsSync(src)) throw new Error(`vendor/ not found in plugin at ${src}`)
       mkdirSync(dest, { recursive: true })
-      cpSync(src, dest, { recursive: true })
+      cpSync(src, dest, { recursive: true, force: true })
     },
   })
 
@@ -99,6 +104,28 @@ export async function runSetup(directory: string) {
         },
       }
       writeFileSync(configPath, JSON.stringify(config, null, 2) + "\n")
+    },
+  })
+
+  // Step 3b: Write .luaurc so luau-lsp resolves vendor paths
+  steps.push({
+    name: "Write .luaurc (vendor path aliases)",
+    fn: () => {
+      const luaurcPath = join(projectDir, ".luaurc")
+      let luaurc: Record<string, unknown> = {}
+      if (existsSync(luaurcPath)) {
+        try { luaurc = JSON.parse(readFileSync(luaurcPath, "utf-8")) } catch { /* corrupted, start fresh */ }
+      }
+      // Merge aliases — preserve user-defined ones, add/overwrite ours
+      const aliases = (luaurc.aliases as Record<string, string>) || {}
+      aliases["Packages"] = ".opencode/vendor/rbxutil"
+      aliases["ProfileStore"] = ".opencode/vendor/profilestore"
+      aliases["Promise"] = ".opencode/vendor/promise"
+      aliases["TestEZ"] = ".opencode/vendor/testez"
+      aliases["t"] = ".opencode/vendor/t"
+      luaurc.aliases = aliases
+      luaurc.languageMode = luaurc.languageMode || "nonstrict"
+      writeFileSync(luaurcPath, JSON.stringify(luaurc, null, 2) + "\n")
     },
   })
 

@@ -43,11 +43,11 @@ Then run `opencode` once to activate (copies commands globally), then `/setup-ga
 - Component — CollectionService tag binding (Sleitnick/RbxUtil)
 - t — Runtime type checking (osyrisrblx, recommended)
 - TestEZ — BDD testing framework (Roblox, recommended)
-- 25+ additional RbxUtil packages available on demand (see vendor/README.md)
+- 25+ additional RbxUtil packages available on demand (see .opencode/vendor/README.md)
 
 ## How it works
 
-The plugin registers a `roblox_setup` tool and copies 3 commands to your global config on first launch. When you run `/setup-game`, it copies 15 skills and vendor libs to your project, writes LSP config to `opencode.json`, and writes the core directives block to `AGENTS.md`.
+The plugin registers a `roblox_setup` tool and copies 3 commands to your global config on first launch. When you run `/setup-game`, it copies 15 skills and vendor libs to `.opencode/`, writes LSP config to `opencode.json`, generates `.luaurc` with vendor path aliases, and writes the core directives block to `AGENTS.md`.
 
 After setup, the plugin is dormant. The 15 skills do all the work — the AI loads them on-demand based on what you're working on.
 

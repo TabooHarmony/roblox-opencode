@@ -1,5 +1,6 @@
 // src/index.ts
 import { tool } from "@opencode-ai/plugin";
+import { fileURLToPath } from "node:url";
 var VERSION = "1.0.0";
 var MARKER_BEGIN = `<!-- roblox-opencode ${VERSION} BEGIN \u2014 managed block, edits inside will be overwritten -->`;
 var MARKER_END = "<!-- roblox-opencode END -->";
@@ -8,7 +9,7 @@ var RobloxOpenCode = async () => {
     const { existsSync, mkdirSync, readdirSync, copyFileSync } = await import("fs");
     const { join } = await import("path");
     const os = await import("os");
-    const pkgDir = join(import.meta.dirname ?? new URL(".", import.meta.url).pathname, "..");
+    const pkgDir = join(import.meta.dirname ?? fileURLToPath(new URL(".", import.meta.url)), "..");
     const srcDir = join(pkgDir, "commands");
     const destDir = join(os.homedir(), ".config", "opencode", "commands");
     if (existsSync(srcDir)) {
@@ -26,6 +27,9 @@ var RobloxOpenCode = async () => {
         description: "One-time project setup for roblox-opencode. Copies 15 skills and vendor libraries (rbxutil, profilestore, promise, testez, t) to the project, writes luau-lsp config to opencode.json, and writes the core Roblox agent instructions to AGENTS.md. Run this when first opening a Roblox project.",
         args: {},
         async execute(_args, context) {
+          if (!context.directory) {
+            return [{ step: "pre-check", status: "error", error: "No project directory. Open a project folder first." }];
+          }
           return await runSetup(context.directory);
         }
       })
@@ -35,7 +39,7 @@ var RobloxOpenCode = async () => {
 async function runSetup(directory) {
   const { existsSync, mkdirSync, readFileSync, writeFileSync, cpSync } = await import("fs");
   const { join } = await import("path");
-  const pkgDir = join(import.meta.dirname ?? new URL(".", import.meta.url).pathname, "..");
+  const pkgDir = join(import.meta.dirname ?? fileURLToPath(new URL(".", import.meta.url)), "..");
   const projectDir = directory;
   const steps = [];
   steps.push({
@@ -45,17 +49,17 @@ async function runSetup(directory) {
       const dest = join(projectDir, ".opencode", "skills");
       if (!existsSync(src)) throw new Error(`skills/ not found in plugin at ${src}`);
       mkdirSync(dest, { recursive: true });
-      cpSync(src, dest, { recursive: true });
+      cpSync(src, dest, { recursive: true, force: true });
     }
   });
   steps.push({
     name: "Copy vendor libraries to project",
     fn: () => {
       const src = join(pkgDir, "vendor");
-      const dest = join(projectDir, "vendor");
+      const dest = join(projectDir, ".opencode", "vendor");
       if (!existsSync(src)) throw new Error(`vendor/ not found in plugin at ${src}`);
       mkdirSync(dest, { recursive: true });
-      cpSync(src, dest, { recursive: true });
+      cpSync(src, dest, { recursive: true, force: true });
     }
   });
   steps.push({
@@ -77,6 +81,28 @@ async function runSetup(directory) {
         }
       };
       writeFileSync(configPath, JSON.stringify(config, null, 2) + "\n");
+    }
+  });
+  steps.push({
+    name: "Write .luaurc (vendor path aliases)",
+    fn: () => {
+      const luaurcPath = join(projectDir, ".luaurc");
+      let luaurc = {};
+      if (existsSync(luaurcPath)) {
+        try {
+          luaurc = JSON.parse(readFileSync(luaurcPath, "utf-8"));
+        } catch {
+        }
+      }
+      const aliases = luaurc.aliases || {};
+      aliases["Packages"] = ".opencode/vendor/rbxutil";
+      aliases["ProfileStore"] = ".opencode/vendor/profilestore";
+      aliases["Promise"] = ".opencode/vendor/promise";
+      aliases["TestEZ"] = ".opencode/vendor/testez";
+      aliases["t"] = ".opencode/vendor/t";
+      luaurc.aliases = aliases;
+      luaurc.languageMode = luaurc.languageMode || "nonstrict";
+      writeFileSync(luaurcPath, JSON.stringify(luaurc, null, 2) + "\n");
     }
   });
   steps.push({
