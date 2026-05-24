@@ -21,10 +21,10 @@
     "url": "https://github.com/TabooHarmony/roblox-opencode"
   },
   "scripts": {
-    "build": "bun build src/index.ts --outdir dist --target bun --format esm"
+    "build": "esbuild src/index.ts --bundle --outfile=dist/server.js --target=esnext --format=esm --platform=node"
   },
   "peerDependencies": {
-    "@opencode-ai/plugin": "^1.15.10"
+    "@opencode-ai/plugin": ">=1.0.0"
   },
   "files": [
     "dist/",
