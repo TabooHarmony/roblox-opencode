@@ -8,6 +8,7 @@ const MARKER_END = "<!-- roblox-opencode END -->"
 
 export const RobloxOpenCode: Plugin = async ({ directory, client }) => {
   const projectDir = directory
+  const pkgDir = dirname(dirname(new URL(import.meta.url).pathname))
 
   // Only activate for Roblox projects — check for .luau files or existing markers
   const agentsPath = join(projectDir, "AGENTS.md")
@@ -23,7 +24,7 @@ export const RobloxOpenCode: Plugin = async ({ directory, client }) => {
   if (!isRobloxProject) {
     // Check for .luau files in the project
     try {
-      const { readdirSync, statSync } = await import("fs")
+      const { readdirSync } = await import("fs")
       const hasLuau = (dir, depth) => {
         if (depth > 2) return false
         for (const entry of readdirSync(dir, { withFileTypes: true })) {
@@ -44,6 +45,30 @@ export const RobloxOpenCode: Plugin = async ({ directory, client }) => {
 
   client.app.log.info(`roblox-opencode v${VERSION} loaded`)
 
+  // Auto-copy skills and commands to project if missing
+  const skillsDir = join(projectDir, ".opencode", "skills")
+  const commandsDir = join(projectDir, ".opencode", "commands")
+
+  if (!existsSync(skillsDir)) {
+    try {
+      mkdirSync(skillsDir, { recursive: true })
+      cpSync(join(pkgDir, "skills"), skillsDir, { recursive: true })
+      client.app.log.info("roblox-opencode: skills copied to .opencode/skills/")
+    } catch (e) {
+      client.app.log.warn(`roblox-opencode: failed to copy skills: ${e}`)
+    }
+  }
+
+  if (!existsSync(commandsDir)) {
+    try {
+      mkdirSync(commandsDir, { recursive: true })
+      cpSync(join(pkgDir, "commands"), commandsDir, { recursive: true })
+      client.app.log.info("roblox-opencode: commands copied to .opencode/commands/")
+    } catch (e) {
+      client.app.log.warn(`roblox-opencode: failed to copy commands: ${e}`)
+    }
+  }
+
   // Check if AGENTS.md has current version markers
   if (existsSync(agentsPath)) {
     const content = readFileSync(agentsPath, "utf-8")
@@ -55,14 +80,7 @@ export const RobloxOpenCode: Plugin = async ({ directory, client }) => {
     }
   }
 
-  return {
-    "session.created": async () => {
-      const skillsDir = join(projectDir, ".opencode", "skills")
-      if (!existsSync(skillsDir)) {
-        client.app.log.info("roblox-opencode skills not installed. Run /setup to initialize.")
-      }
-    },
-  }
+  return {}
 }
 
 /**

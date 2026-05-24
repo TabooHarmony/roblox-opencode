@@ -7,7 +7,7 @@ agent: build
 
 Orchestrates the roblox-opencode environment. Idempotent. Re-runnable. Self-updating.
 
-Run this after `opencode plugin roblox-opencode`. Follow each step in order. If any optional step fails, skip it with a note and continue.
+Skills and commands are auto-copied by the plugin when it detects a Roblox project. /setup handles the remaining configuration: MCP, LSP, AGENTS.md core block, and sync verification.
 
 ---
 

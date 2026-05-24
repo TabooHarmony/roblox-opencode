@@ -6,6 +6,7 @@ var MARKER_BEGIN = `<!-- roblox-opencode ${VERSION} BEGIN \u2014 managed block, 
 var MARKER_END = "<!-- roblox-opencode END -->";
 var RobloxOpenCode = async ({ directory, client }) => {
   const projectDir = directory;
+  const pkgDir = dirname(dirname(new URL(import.meta.url).pathname));
   const agentsPath = join(projectDir, "AGENTS.md");
   let isRobloxProject = false;
   if (existsSync(agentsPath)) {
@@ -16,7 +17,7 @@ var RobloxOpenCode = async ({ directory, client }) => {
   }
   if (!isRobloxProject) {
     try {
-      const { readdirSync, statSync } = await import("fs");
+      const { readdirSync } = await import("fs");
       const hasLuau = (dir, depth) => {
         if (depth > 2) return false;
         for (const entry of readdirSync(dir, { withFileTypes: true })) {
@@ -33,6 +34,26 @@ var RobloxOpenCode = async ({ directory, client }) => {
   }
   if (!isRobloxProject) return {};
   client.app.log.info(`roblox-opencode v${VERSION} loaded`);
+  const skillsDir = join(projectDir, ".opencode", "skills");
+  const commandsDir = join(projectDir, ".opencode", "commands");
+  if (!existsSync(skillsDir)) {
+    try {
+      mkdirSync(skillsDir, { recursive: true });
+      cpSync(join(pkgDir, "skills"), skillsDir, { recursive: true });
+      client.app.log.info("roblox-opencode: skills copied to .opencode/skills/");
+    } catch (e) {
+      client.app.log.warn(`roblox-opencode: failed to copy skills: ${e}`);
+    }
+  }
+  if (!existsSync(commandsDir)) {
+    try {
+      mkdirSync(commandsDir, { recursive: true });
+      cpSync(join(pkgDir, "commands"), commandsDir, { recursive: true });
+      client.app.log.info("roblox-opencode: commands copied to .opencode/commands/");
+    } catch (e) {
+      client.app.log.warn(`roblox-opencode: failed to copy commands: ${e}`);
+    }
+  }
   if (existsSync(agentsPath)) {
     const content = readFileSync(agentsPath, "utf-8");
     const hasCurrentMarkers = content.includes(MARKER_BEGIN);
@@ -41,14 +62,7 @@ var RobloxOpenCode = async ({ directory, client }) => {
       client.app.log.warn("roblox-opencode AGENTS.md markers are outdated. Run /setup to update.");
     }
   }
-  return {
-    "session.created": async () => {
-      const skillsDir = join(projectDir, ".opencode", "skills");
-      if (!existsSync(skillsDir)) {
-        client.app.log.info("roblox-opencode skills not installed. Run /setup to initialize.");
-      }
-    }
-  };
+  return {};
 };
 async function runSetup(directory) {
   const pkgDir = dirname(new URL(import.meta.url).pathname.replace("/src", ""));
