@@ -1,7 +1,7 @@
 ---
 name: roblox-monetization
 description: ProcessReceipt correctness, prompt APIs, purchase reconciliation, session-lock interaction.
-last_reviewed: 2026-05-21
+last_reviewed: 2026-05-26
 ---
 
 <!-- Source: brockmartin/roblox-game-skill (MIT) -->
@@ -37,8 +37,15 @@ Key rules:
 - PromptGamePassPurchase / PromptProductPurchase from client, handle on server.
 - TOS: odds disclosure MANDATORY for random items. Games get removed without it.
 - TOS: no real-world trading, no misleading purchase UI, no pay-to-win that ruins gameplay.
-- DevEx rate: 0.0035 USD per Robux earned (as of 2025).
+- DevEx: dual-rate system. New Rate $0.0038/R$ (earned after Sept 5, 2025). Old Rate $0.0035/R$ (earned before). Must clear Old Rate balance first before New Rate kicks in.
 - Premium Payouts: engagement-based, detect with player.MembershipType.
+- Subscriptions: recurring monthly revenue via PromptSubscriptionPurchase. Tiered benefits.
+- Private Servers: monetizable via PromptCreatePrivateServer / PromptPurchasePrivateServer.
+- Paid Access: one-time Robux or local currency fee via PromptPurchaseExperience. Common for closed betas.
+- Immersive Ads: AdService image/portal/video ad units. Earn via ad views, separate from Rewarded Video Ads.
+- PolicyService: must-check for compliance (age/region restrictions on subscriptions, random items, ads).
+- Commerce Products: sell physical merchandise through Roblox.
+- Creator Store: sell plugins ($4.99+) and models ($2.99+) for USD. 30-day escrow hold.
 - Never store purchase state only in DataStore without session locking (use ProfileStore).
 
 ---
@@ -457,9 +464,311 @@ Players opt-in to watching a short video ad in exchange for an in-game reward. R
 
 ---
 
-## 6. Pricing Strategy
+## 6. Subscriptions
 
-### Common Roblox Price Points
+Subscriptions provide recurring monthly revenue. Players pay a monthly Robux fee and receive ongoing benefits. This creates predictable income and higher lifetime value per player.
+
+### Core API
+
+| Method / Event | Purpose |
+|---|---|
+| `MarketplaceService:PromptSubscriptionPurchase(player, subscriptionId)` | Show the subscription purchase prompt |
+| `MarketplaceService.SubscriptionPurchaseFinished` | Fires when a subscription is purchased or cancelled |
+| `MarketplaceService:GetSubscriptionProductInfoAsync(subscriptionId)` | Get subscription tier details (price, name, description) |
+| `MarketplaceService:UserHasSubscriptionAsync(userId, subscriptionId)` | Check if a player has an active subscription |
+
+### Subscription Configuration
+
+Subscriptions are configured in the **Creator Dashboard > Monetization > Subscriptions**. Each subscription has:
+
+- **Name** — Displayed to the player
+- **Description** — What benefits they receive
+- **Price** — Monthly Robux cost (25 R$ minimum)
+- **Benefits** — Defined by your game; granted server-side
+
+### Implementation (Server Script)
+
+```luau
+-- ServerScriptService/SubscriptionService.lua
+local MarketplaceService = game:GetService("MarketplaceService")
+local Players = game:GetService("Players")
+
+local SUBSCRIPTIONS = {
+	["premium_monthly"] = {
+		id = 123456789,
+		name = "Premium Monthly",
+		grant = function(player: Player)
+			player:SetAttribute("Subscriber", true)
+			player:SetAttribute("MonthlyBonus", 500)
+		end,
+		revoke = function(player: Player)
+			player:SetAttribute("Subscriber", false)
+			player:SetAttribute("MonthlyBonus", 0)
+		end,
+	},
+}
+
+-- Grant on join if subscription is active
+local function onPlayerAdded(player: Player)
+	for key, sub in SUBSCRIPTIONS do
+		local success, hasSub = pcall(function()
+			return MarketplaceService:UserHasSubscriptionAsync(player.UserId, sub.id)
+		end)
+		if success and hasSub then
+			sub.grant(player)
+		end
+	end
+end
+
+-- Handle purchase and cancellation events
+MarketplaceService.SubscriptionPurchaseFinished:Connect(function(player: Player, subscriptionId: number, wasPurchased: boolean)
+	for key, sub in SUBSCRIPTIONS do
+		if sub.id == subscriptionId then
+			if wasPurchased then
+				sub.grant(player)
+			else
+				sub.revoke(player)
+			end
+			break
+		end
+	end
+end)
+
+for _, player in Players:GetPlayers() do
+	task.spawn(onPlayerAdded, player)
+end
+Players.PlayerAdded:Connect(onPlayerAdded)
+```
+
+### Subscription Design Best Practices
+
+- **Tiered value:** Offer 2-3 tiers (Bronze/Silver/Gold or Basic/Pro/Ultimate) at increasing prices
+- **Clear benefits:** List exact benefits in the subscription description. "2x coins" is better than "exclusive rewards"
+- **Recurring currency:** Give a daily or monthly currency stipend that incentivizes logging in
+- **Exclusive content:** Cosmetics, titles, frames, and emotes that are permanently unlocked for subscribers
+- **Non-disruptive:** Free players should still enjoy the full game loop. Subscribers get bonuses, not exclusive gameplay
+- **Cancellation:** Handle the `SubscriptionPurchaseFinished` event for cancellations to revoke benefits promptly
+
+---
+
+## 7. Private Servers
+
+Private servers let players pay a monthly Robux fee for a dedicated server instance they control. Players can invite friends, play in private, host events, or farm resources without interference.
+
+### Core API
+
+| Method / Event | Purpose |
+|---|---|
+| `MarketplaceService:PromptCreatePrivateServer(player, placeId)` | Show the create/purchase prompt for a new private server |
+| `MarketplaceService:PromptPurchasePrivateServer(player, privateServerId)` | Show the renewal prompt for an existing private server |
+| `MarketplaceService.PrivateServerPurchaseFinished` | Fires when a private server is purchased or renewed |
+
+### Setup
+
+1. Navigate to your experience in Creator Dashboard
+2. Go to **Monetization > Private Servers**
+3. Set the monthly price in Robux (min 10 R$, can change every 60 days)
+4. Configure any server-specific settings
+
+### Notes
+
+- **Price changes** are limited to once every 60 days. Plan pricing carefully.
+- **Revenue:** You earn 50% of the subscription fee (Roblox takes the other 50%).
+- **Permissions:** Private server owners can configure who can join via the server's settings page.
+- **VipServer:** The legacy `VipServer` API is deprecated. Use the new Private Server APIs.
+
+### Common Use Cases
+
+- **Competitive practice:** Teams/guilds rent a server to practice strategies
+- **Roleplay communities:** Persistent worlds for friend groups
+- **Resource farming:** Dedicated server for grinding without competition
+- **Content creators:** Record/stream without interference from other players
+- **Classes/events:** Educators or event hosts run private sessions
+
+---
+
+## 8. Paid Access (Entry Fee)
+
+Paid access charges a one-time fee — in Robux or local currency — for entry to your experience. Commonly used for closed betas, premium experiences, or content packs.
+
+### Core API
+
+| Method / Event | Purpose |
+|---|---|
+| `MarketplaceService:PromptPurchaseExperience(player)` | Prompt the player to purchase access |
+| `MarketplaceService.PromptPurchaseExperienceFinished` | Fires when the prompt closes |
+| `MarketplaceService:UserOwnsGamePassAsync` | Check if the player has purchased access (uses a hidden GamePass) |
+
+### Implementation
+
+```luau
+-- Server: Check access on join
+local MarketplaceService = game:GetService("MarketplaceService")
+
+-- Roblox assigns a hidden GamePass ID when you enable paid access
+-- Check it with UserOwnsGamePassAsync on PlayerAdded
+local ACCESS_PASS_ID = 123456789  -- Replace with your experience's ID
+
+local function onPlayerAdded(player: Player)
+	local success, hasAccess = pcall(function()
+		return MarketplaceService:UserOwnsGamePassAsync(player.UserId, ACCESS_PASS_ID)
+	end)
+
+	if success and hasAccess then
+		-- Player has purchased access, let them in
+	else
+		-- Player has not purchased access
+		-- Teleport them to the purchase experience or show a purchase prompt
+	end
+end
+```
+
+```luau
+-- Client: Prompt purchase
+local MarketplaceService = game:GetService("MarketplaceService")
+local Players = game:GetService("Players")
+
+local function promptPurchase()
+	MarketplaceService:PromptPurchaseExperience(Players.LocalPlayer)
+end
+
+MarketplaceService.PromptPurchaseExperienceFinished:Connect(function(player: Player, wasPurchased: boolean)
+	if wasPurchased then
+		-- Player purchased access, teleport to the main experience
+	end
+end)
+```
+
+### Types
+
+| Type | Priced In | Payout |
+|------|-----------|--------|
+| **Robux** | Robux (one-time) | Standard Robux payout |
+| **Local Currency** | User's local currency (fallback USD) | USD payout |
+
+### Use Cases
+
+- **Closed beta:** Let most engaged users test early
+- **Standalone experiences:** One-time purchase games (premium content packs)
+- **Ticket/event access:** Temporary access for limited-time events
+
+---
+
+## 9. Immersive Ads
+
+Immersive ads allow Roblox to serve advertiser content inside your experience. You earn revenue from ad views. Separate from Rewarded Video Ads (which are player-initiated opt-in).
+
+### Ad Formats
+
+| Format | Description | Placement |
+|--------|-------------|-----------|
+| **Image Ad** | Static image displayed on an AdPanel or AdPortal | On a surface, billboard, or screen in your experience |
+| **Portal Ad** | Interactive portal that teleports to another experience | Ground-level portal the player can walk through |
+| **Video Ad** | Video player ad unit | On a screen or surface |
+| **Branded Ad** | Custom branded content integrated into the experience | Sponsored items, branded environments |
+
+### Core API
+
+| API | Purpose |
+|---|---|
+| `AdService` | Service for managing ad units |
+| `AdPortal` | Instance class for portal ad units |
+| `AdGui` | Instance class for image/video ad units placed in 3D space |
+
+### Placement Best Practices
+
+- **Natural integration:** Place ads where real-world billboards or screens would exist (stadium walls, shop windows, city buildings)
+- **Non-intrusive:** Ads should not block gameplay, navigation, or UI
+- **Contextual:** An ad for a racing game fits on a billboard in your racing game's loading area
+- **No interaction required:** Players should not be required to watch or interact with ads to progress
+- **Respect PolicyService:** Check `PolicyService:GetPolicyInfoForPlayerAsync()` to ensure ads are shown only to eligible users (age/region restrictions)
+
+---
+
+## 10. Commerce Products and Creator Store
+
+### Commerce Products
+
+Commerce Products allow you to sell **physical goods** (merchandise) through Roblox. Configured in the Creator Dashboard under **Monetization > Commerce Products**.
+
+- Requires seller onboarding and eligibility verification
+- Products are synced to Roblox for purchase
+- Supports fulfillment tracking
+
+### Creator Store (Plugins and Models)
+
+Sell development assets to other creators:
+
+| Asset Type | Minimum Price | Revenue Share |
+|------------|---------------|---------------|
+| **Plugin** | $4.99 USD | Taxes and payment processing fees only |
+| **Model** | $2.99 USD | Taxes and payment processing fees only |
+
+**Escrow hold:** Roblox holds your share of each sale for **30 days** from the date of purchase.
+
+### Marketplace (Catalog) Commissions
+
+When users purchase your catalog items (accessories, clothes) within your experience via the avatar inspect menu or avatar editor service, you earn a commission on each sale.
+
+---
+
+## 11. PolicyService Compliance
+
+Roblox requires you to use `PolicyService` to restrict certain monetization features based on the player's age, location, and platform.
+
+### When to Check PolicyService
+
+- **Subscriptions / Commerce Products:** Only show purchase options to eligible users
+- **Paid random items (loot boxes, gacha):** Must block for users in restricted regions
+- **Immersive ads:** Only show ad units to eligible users
+- **Paid item trading:** Must check eligibility
+
+### Implementation
+
+```luau
+-- ServerScriptService/PolicyServiceCheck.lua
+local PolicyService = game:GetService("PolicyService")
+local Players = game:GetService("Players")
+
+local function isEligibleForRandomItems(player: Player): boolean
+	local success, policyInfo = pcall(function()
+		return PolicyService:GetPolicyInfoForPlayerAsync(player.UserId)
+	end)
+
+	if not success then
+		-- On failure, default to restricting the feature
+		return false
+	end
+
+	return policyInfo.IsPriceFixEnabled  -- Example: check relevant policy flag
+end
+
+-- Usage: hide loot boxes if the player is not eligible
+local function updateShopUI(player: Player)
+	if isEligibleForRandomItems(player) then
+		-- Show loot boxes in the shop
+	else
+		-- Hide loot boxes or show a "not available in your region" message
+	end
+end
+
+Players.PlayerAdded:Connect(function(player: Player)
+	player:GetPropertyChangedSignal("MembershipType"):Connect(function()
+		updateShopUI(player)
+	end)
+	updateShopUI(player)
+end)
+```
+
+### Recommended Approach
+
+- **Fail closed:** If `PolicyService:GetPolicyInfoForPlayerAsync()` errors, default to restricting the feature
+- **Cache results per-player** to avoid repeated API calls
+- **Re-check on locale change** if you support in-session region switching
+
+---
+
+## 12. Pricing Strategy
 
 | Robux | Typical Use |
 |---|---|
@@ -489,18 +798,36 @@ Players opt-in to watching a short video ad in exchange for an in-game reward. R
 
 ---
 
-## 7. DevEx Math
+## 13. DevEx Math
 
-### Exchange Rate
+### Dual Exchange Rate System
 
-As of 2026, the Developer Exchange (DevEx) rate is approximately:
+As of September 5, 2025, Roblox operates a dual-rate DevEx system based on when Robux was earned:
 
-> **1 Robux earned = ~$0.0038 USD**
+| Rate | Value | Applies To |
+|------|-------|------------|
+| **New Rate** | $0.0038/R$ | Robux earned **on or after** 10 AM PT on September 5, 2025 |
+| **Old Rate** | $0.0035/R$ | Robux earned **before** 10 AM PT on September 5, 2025 |
 
-This means:
-- **30,000 Robux** (minimum cashout) = ~**$114 USD**
-- **100,000 Robux** = ~**$380 USD**
-- **1,000,000 Robux** = ~**$3,800 USD**
+### Cash-Out Ordering Rules
+
+- **Must clear Old Rate first:** You must cash out **all** Old Rate Robux before you can cash out any New Rate Robux.
+- **Spending does not help:** Spending Robux on the platform (items, experiences, etc.) does **not** reduce your Old Rate balance. Spending is deducted from your total balance but does not count toward clearing Old Rate first.
+- **Group funds:** If you receive payment from a Group that earned Robux before the cutoff, those Robux also cash out at the Old Rate. Your Old Rate balance may increase from Group payouts.
+
+### Example Conversion
+
+| Balance Type | Amount | Rate | USD Value |
+|-------------|--------|------|-----------|
+| Old Rate | 30,000 R$ | $0.0035 | $105 |
+| New Rate | 30,000 R$ | $0.0038 | $114 |
+| Mixed (clear Old Rate first) | 30,000 Old + 30,000 New | Dual | $105 + $114 = $219 |
+
+### Minimum Cashout
+
+- **30,000 Robux** minimum per cash-out request.
+- Funds are reviewed on a per-request basis. First-time cashouts require creating a DevEx portal account via email invite.
+- Eligibility requirements and service requirements are defined in the [DevEx Terms of Use](https://en.help.roblox.com/hc/en-us/articles/205499100-Developer-Exchange-DevEx-Program-Frequently-Asked-Questions).
 
 > **Upcoming (June 2026):** US creators 18+ will get a higher rate of ~$0.0054/Robux (42% increase). Requires identity verification.
 
@@ -514,7 +841,7 @@ Monthly Revenue (Robux) = Daily Revenue x 30
 Monthly Revenue (USD) = Monthly Revenue (Robux) x 0.0038
 ```
 
-**Example projections at different scales:**
+**Example projections at different scales (New Rate):**
 
 | DAU | Conversion Rate | Avg Purchase | Daily Robux | Monthly USD |
 |---|---|---|---|---|
@@ -522,6 +849,8 @@ Monthly Revenue (USD) = Monthly Revenue (Robux) x 0.0038
 | 1,000 | 2% | 100 R$ | 2,000 | $228 |
 | 10,000 | 3% | 150 R$ | 45,000 | $5,130 |
 | 100,000 | 3% | 150 R$ | 450,000 | $51,300 |
+
+> **Important:** If your revenue includes Old Rate Robux, the USD value will be lower until the Old Rate balance is cleared. For mixed balances, calculate separately and sum.
 
 **Typical conversion rates on Roblox:** 1-5% of DAU makes a purchase on any given day. Well-optimized games with strong shop design reach the higher end.
 
@@ -539,7 +868,7 @@ Required paying players = Required Robux / Average Purchase
 
 ---
 
-## 8. Roblox TOS Compliance (MANDATORY)
+## 14. Roblox TOS Compliance (MANDATORY)
 
 These are not suggestions. Violating them gets your game taken down.
 
@@ -561,6 +890,25 @@ local oddsLabel = script.Parent.OddsLabel
 oddsLabel.Text = "Drop rates: Common 60% | Uncommon 25% | Rare 10% | Epic 4% | Legendary 1%"
 ```
 
+### Presenting Products (Guidelines)
+
+Roblox requires monetization products to be presented in a way that is **transparent, honest, and user-friendly**:
+
+**Discounts must be genuine and fair:**
+- A discount is not genuine if an item is always "on sale" for the same amount.
+- A discount is not fair if it's only offered for a very short time, pressuring users.
+
+**No misleading urgency:**
+- Don't claim an item is almost out of stock or only available for a short time if it isn't true.
+- Don't use a countdown timer that isn't accurate or automatically restarts.
+
+**Language recommendations:**
+| Avoid | Use Instead |
+|-------|-------------|
+| "GET IT NOW" | "View Item" |
+| "LAST CHANCE, ACT NOW" | "See Price" |
+| "BUY BEFORE IT'S GONE!" | "Open Shop" |
+
 ### Other TOS Rules That Affect Monetization
 
 - **No gambling mechanics.** Do not implement anything that resembles gambling (betting Robux, coin flips, roulette). Roblox bans these.
@@ -568,12 +916,13 @@ oddsLabel.Text = "Drop rates: Common 60% | Uncommon 25% | Rare 10% | Epic 4% | L
 - **No misleading product descriptions.** GamePass and DevProduct descriptions must exactly match what the player receives.
 - **No purchased advantages in experiences marked as "All Ages."** Stricter rules apply for experiences targeting younger audiences.
 - **Refund policy.** If a player reports not receiving an item, investigate and honor legitimate claims. Roblox can reverse charges.
+- **PolicyService integration required.** Use `PolicyService:GetPolicyInfoForPlayerAsync()` to restrict subscriptions, commerce products, paid random items, and immersive ads based on user eligibility.
 
 > **Recommendation:** Download and read the full [Roblox Community Standards](https://en.help.roblox.com/hc/en-us/articles/203313410-Roblox-Community-Standards) and [Terms of Use](https://en.help.roblox.com/hc/en-us/articles/115004647846-Roblox-Terms-of-Use). Feed them to the AI as context when working on monetization features.
 
 ---
 
-## 9. Ethical Monetization
+## 15. Ethical Monetization
 
 Roblox's audience skews young (a significant portion is under 16). This carries a responsibility to monetize fairly. Roblox also actively enforces policies against predatory practices.
 
@@ -596,7 +945,7 @@ Roblox's audience skews young (a significant portion is under 16). This carries 
 
 ---
 
-## 10. Best Practices
+## 16. Best Practices
 
 ### Server-Side Purchase Verification (Always)
 
@@ -653,7 +1002,7 @@ Keep a DataStore or external log of all purchases so you can:
 
 ---
 
-## 11. Anti-Patterns
+## 17. Anti-Patterns
 
 ### Client-Side Purchase Granting (Exploitable)
 
