@@ -2,7 +2,7 @@
 name: roblox-animation-vfx
 description: >
   Animations, particles, tweens, ContentProvider, visual effects.
-last_reviewed: 2026-05-21
+last_reviewed: 2026-05-25
 ---
 
 <!-- Source: brockmartin/roblox-game-skill (MIT) -->
@@ -35,6 +35,7 @@ Key rules:
 - MarkerReachedSignal for syncing sounds/VFX to animation frames
 - ParticleEmitter: Rate=0 + Emit(count) for burst effects. Enabled=false to stop new particles.
 - Beams need Attachment0 + Attachment1. Trails need one Attachment.
+- Highlight: parent to target or set Adornee. Max 255 per client. AlwaysOnTop to see through geometry.
 - TweenService: create TweenInfo once, reuse. Chain with Completed event, don't nest.
 - Post-processing: keep subtle. Bloom + ColorCorrection + DepthOfField cover most moods.
 - Clean up: Destroy() particles/beams when done. Use Trove for lifecycle.
@@ -451,6 +452,109 @@ trail.Parent = part
 - **Sword trails**: `Trail` on blade with short `Lifetime` (0.2-0.4s).
 - **Magic effects**: `Beam` with high `CurveSize` values and scrolling texture for arcane tethers.
 - **Lightning**: `Beam` with many `Segments`, rapidly randomizing `CurveSize0/1` each frame.
+
+---
+
+### Parent Destruction Behavior
+
+When a `Part` or `Model` containing effects is destroyed (`:Destroy()`, player leave, workspace clear), all child `ParticleEmitter`, `Trail`, `Beam`, and `Attachment` are destroyed instantly. Active particles vanish mid-flight, trails cut off, beams disappear.
+
+**Solution — Debris + temporary holder:** If you need an effect to finish gracefully after its parent is gone, reparent it to a temporary part and let `Debris` clean up.
+
+```luau
+local Debris = game:GetService("Debris")
+
+local function destroyWithGrace(effect: Instance, parent: Instance, gracePeriod: number)
+    -- Create a temporary invisible holder
+    local holder = Instance.new("Part")
+    holder.Anchored = true
+    holder.CanCollide = false
+    holder.Transparency = 1
+    holder.Size = Vector3.one
+    holder.Parent = workspace
+
+    -- Reparent the effect so it survives the original parent
+    effect.Parent = holder
+
+    -- Destroy the original parent (effect is now safe)
+    parent:Destroy()
+
+    -- Debris cleans up the holder + effect after the grace period
+    Debris:AddItem(holder, gracePeriod)
+end
+
+-- Example: Trail with 1s lifetime — give it 1.1s to fade out cleanly
+local trail = -- ... setup trail on a sword part ...
+destroyWithGrace(trail, swordPart, 1.1)
+```
+
+For `Trail` specifically, set `Debris:AddItem(holder, trail.Lifetime + 0.1)` so the trail's existing segments finish rendering before cleanup.
+
+---
+
+## Highlight
+
+A `Highlight` instance draws a colored outline around a `BasePart` or `Model` to call attention to it. Every highlight has two layers: an **outline** (silhouette edge) and an **interior** (overlay fill), each independently customizable.
+
+### Basic Usage
+
+```luau
+local highlight = Instance.new("Highlight")
+highlight.Adornee = targetPart
+highlight.FillColor = Color3.fromRGB(255, 50, 50)
+highlight.FillTransparency = 0.3
+highlight.OutlineColor = Color3.new(1, 1, 1)
+highlight.Parent = targetPart
+```
+
+### Properties
+
+| Property | Type | Default | Description |
+|----------|------|---------|-------------|
+| `Adornee` | Instance | — | The `BasePart` or `Model` to highlight |
+| `DepthMode` | Enum.HighlightDepthMode | `AlwaysOnTop` | `AlwaysOnTop` = visible through objects, `Occluded` = hidden by obstructions |
+| `Enabled` | boolean | `true` | Toggle visibility |
+| `FillColor` | Color3 | `[255, 200, 50]` | Interior overlay color |
+| `FillTransparency` | number | `0.5` | 0 = opaque, 1 = invisible |
+| `OutlineColor` | Color3 | `[255, 255, 255]` | Edge outline color |
+| `OutlineTransparency` | number | `0` | 0 = opaque, 1 = invisible |
+
+### Common Pattern — Team Highlight
+
+```luau
+local function addTeamHighlight(character: Model, teamColor: Color3)
+    local hl = Instance.new("Highlight")
+    hl.Adornee = character
+    hl.FillColor = teamColor
+    hl.FillTransparency = 0.6
+    hl.OutlineColor = teamColor
+    hl.DepthMode = Enum.HighlightDepthMode.AlwaysOnTop
+    hl.Parent = character
+end
+```
+
+### Limitations
+
+- **Max 255 simultaneous** Highlight instances per client. Excess instances are silently ignored.
+- Disabled highlights still count toward the 255 limit — `:Destroy()` instead of `Enabled = false` if permanently unused.
+- The `Highlight` itself is **not** destroyed when its `Adornee` is destroyed. Clean up manually.
+
+### Cleanup on Adornee Destroyed
+
+```luau
+local function attachHighlight(adornee: Instance): Highlight
+    local hl = Instance.new("Highlight")
+    hl.Adornee = adornee
+    hl.Parent = adornee
+
+    adornee.AncestryChanged:Connect(function()
+        if not adornee:IsDescendantOf(game) then
+            hl:Destroy()
+        end
+    end)
+    return hl
+end
+```
 
 ---
 
@@ -991,6 +1095,8 @@ end
 - **Tweening properties every frame via RenderStepped instead of using TweenService** -- TweenService is optimized internally and handles cleanup.
 - **Not disconnecting camera shake connections** -- leads to permanent jitter.
 - **Setting `Camera.CameraType` to `Scriptable` and forgetting to restore it** -- player loses control.
+- **Not cleaning up Highlight after its Adornee is destroyed** -- orphaned Highlights waste one of the 255 slots. Use `AncestryChanged` to auto-destroy.
+- **Destroying a part while effects are active** -- particle bursts, trails, and beams vanish instantly. Reparent to a temporary holder + Debris if you need graceful cleanup.
 - **Playing sounds without ever destroying them** -- memory leak. Always clean up one-shot sounds via `Ended`.
 - **Creating hundreds of PointLights with shadows enabled** -- massive performance hit. Use `Shadows = false` for most dynamic lights.
 

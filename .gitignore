@@ -4,3 +4,4 @@ package-lock.json
 *.log
 .env
 .env.*
+AGENTS.md
