@@ -223,6 +223,52 @@ Luau uses Lua string patterns, not regex. `\d` doesn't work — use `%d`. Escape
 
 ---
 
+## SE-13 | Medium | Local Function Declaration Order
+
+### Problem
+
+Luau has no hoisting. A `local function` is invisible to code above its declaration. AI assistants frequently place helper functions below the functions that call them, causing nil-value runtime errors.
+
+### Rule
+
+**Callees above callers. Always.** If `functionA()` calls `helperB()`, then `helperB` must be declared first.
+
+```luau
+-- BAD: helperB is nil when functionA runs
+local function functionA()
+    helperB() -- ERROR: attempt to call a nil value
+end
+
+local function helperB()
+    print("I'm a helper")
+end
+
+-- GOOD: helper declared first
+local function helperB()
+    print("I'm a helper")
+end
+
+local function functionA()
+    helperB() -- works
+end
+```
+
+### When you need mutual recursion
+
+Use forward declaration:
+
+```luau
+local functionB -- forward declare
+local function functionA()
+    functionB()
+end
+function functionB() -- note: no 'local' (already declared above)
+    functionA()
+end
+```
+
+---
+
 ## Quick Reference
 
 ```
@@ -241,6 +287,7 @@ MEDIUM (fix before scale):
   SE-8  Yielding in module require       → Init/Start lifecycle pattern
   SE-9  Table # with nil gaps            → table.remove or explicit length
   SE-11 Infinite yield WaitForChild      → Always pass timeout parameter
+  SE-13 Local function order             → Callees above callers (no hoisting)
 
 LOW (fix when convenient):
   SE-10 Deprecated wait/spawn/delay      → task.wait/spawn/delay
