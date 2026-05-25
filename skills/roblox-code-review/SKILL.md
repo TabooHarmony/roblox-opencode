@@ -1,12 +1,24 @@
 ---
 name: roblox-code-review
 description: "Code review with security, performance, and monetization lenses for Roblox projects"
-tags: [roblox, code-review, security, performance, monetization]
+tags: [roblox, code-review, security, performance, monetization, networking, data-persistence]
 ---
 
 # /code-review — Code Quality Review
 
 You are performing a code quality review on a Roblox project. Follow these 8 steps. Apply the relevant lens based on what changed. Don't apply all lenses every time.
+
+---
+
+## Quick Reference
+
+**Load lenses below only when code matching that domain changed. Don't apply all lenses every time.**
+
+Key rules:
+- **Remote types:** RemoteEvent (fire-and-forget), UnreliableRemoteEvent (loss-tolerant VFX/position), RemoteFunction (request-response, use sparingly), BindableEvent/BindableFunction (intra-client/server internal, never cross-boundary).
+- **Data persistence:** ALWAYS ProfileStore for player state. Never raw DataStore. Schema template with defaults, DataVersion, migration functions, session locking, BindToClose.
+- **Security:** Validate every remote parameter server-side. Rate-limit all remotes per-player.
+- **Performance:** Consolidate Heartbeat loops. Cache services. Disconnect unused events.
 
 ---
 
@@ -461,3 +473,215 @@ For each recommendation:
 3. Implementation effort (small/medium/large)
 4. Where in the game to present it
 5. Pricing suggestion
+
+---
+
+# Networking / Remote Architecture Lens
+
+*Apply this lens when networking code changed: new remotes, Bindable refactoring, effect syncing, or when auditing remote surface for scaling.*
+
+---
+
+## Networking Step 1: Remote Surface Map
+
+Search for all `RemoteEvent`, `RemoteFunction`, and `UnreliableRemoteEvent` instances. Search for `:FireServer`, `:FireClient`, `:FireAllClients`, `:InvokeServer`, `:InvokeClient`, and `:Invoke` to map the full remote surface.
+
+Record every remote found with:
+- Name
+- Location (ReplicatedStorage path)
+- Type (RemoteEvent, RemoteFunction, UnreliableRemoteEvent)
+- Direction (Client→Server, Server→Client, Client↔Server)
+- What it does and whether it carries critical or cosmetic data
+
+---
+
+## Networking Step 2: Type Selection Audit
+
+Verify each remote uses the correct type:
+
+| Type | Best For | Notes |
+|------|----------|-------|
+| `RemoteEvent` | Fire-and-forget messages | Most common. No return value. |
+| `RemoteFunction` | Request-response patterns | Blocking. Avoid in hot paths. Prefer RemoteEvent + callback pattern. |
+| `UnreliableRemoteEvent` | Loss-tolerant data (effects, cosmetics, position updates) | Can drop packets under load. NEVER for currency, inventory, damage, game state. |
+| `BindableEvent` | Intra-client or intra-server pub/sub | LocalScript→LocalScript or Script→Script only. Never cross Server↔Client boundary. |
+| `BindableFunction` | Intra-client or intra-server request-response | Same boundary rule as BindableEvent. |
+
+Flag any remote using the wrong type:
+- `RemoteFunction` where `RemoteEvent` + response pattern would suffice
+- `RemoteEvent` used as BindableEvent (firing a remote only to reach other scripts on the same client)
+- `RemoteEvent` carrying critical data that should use reliable delivery
+- `UnreliableRemoteEvent` carrying game-critical state
+
+---
+
+## Networking Step 3: RemoteFunction Check
+
+`RemoteFunction` is a blocking pattern — the caller yields until the receiver returns. This can cause lag if overused.
+
+Verify:
+- `:InvokeServer` is used sparingly (not per-frame or in tight loops)
+- `:InvokeClient` is only used when the server genuinely needs an answer from a specific client (rare)
+- Consider replacing with `RemoteEvent` + response event pattern for non-critical request-response flows
+- `:InvokeClient` has a timeout safeguard (client may not respond)
+
+---
+
+## Networking Step 4: Bindable Audit
+
+`BindableEvent` and `BindableFunction` are strictly intra-boundary (Server→Server or Client→Client).
+
+Check:
+- No `BindableEvent` / `BindableFunction` in ReplicatedStorage that is fired by server and listened to by client (use `RemoteEvent` instead — Bindables don't replicate)
+- Client-side `BindableEvent`s are used for decoupling LocalScripts (cleaner than direct module references)
+- Server-side `BindableEvent`s are used for service-to-service pub/sub within the same script context
+- No orphaned or unused Bindable instances left in the hierarchy
+
+---
+
+## Networking Step 5: UnreliableRemoteEvent Audit
+
+`UnreliableRemoteEvent` trades reliability for speed. Data may arrive out of order, arrive duplicates, or not arrive at all.
+
+Verify:
+- Used only for loss-tolerant data: cosmetic effects, non-critical position interpolation, particle triggers, sound events
+- Never used for: currency transactions, inventory changes, damage application, game state transitions, unlock/upgrade actions
+- Client-side has fallback logic (if a cosmetic event is dropped, the game still functions)
+- Server-side does not rely on unreliable delivery for authoritative state
+
+Recommended pattern — separate critical and cosmetic remotes:
+```luau
+-- Critical: reliable RemoteEvent
+local PurchaseRequest = ReplicatedStorage.Remotes.PurchaseRequest  -- RemoteEvent
+-- Cosmetic: unreliable
+local HitEffectSync = ReplicatedStorage.Remotes.HitEffectSync     -- UnreliableRemoteEvent
+```
+
+---
+
+## Networking Step 6: Organization & Naming
+
+Check:
+- All remotes organized under a consistent folder structure (e.g., `ReplicatedStorage > Remotes > {Category}`)
+- Naming convention is consistent: `PascalCase` for remote names, `VerbNoun` pattern (`PlayerRequestPurchase`, `ServerSyncInventory`)
+- No unused / orphaned remotes in ReplicatedStorage
+- RemoteFunction and its response type are clearly paired by naming
+- UnreliableRemoteEvents are clearly distinguishable by name or naming suffix (e.g., `Sync_` prefix)
+
+---
+
+## Networking Step 7: Anti-Patterns
+
+Flag these common networking mistakes:
+
+- **Using RemoteFunction in a hot path** — blocks the caller. Prefer RemoteEvent.
+- **Using RemoteEvent when BindableEvent would suffice** — a remote that only reaches scripts on the same player should be a BindableEvent, avoiding network overhead.
+- **Using RemoteEvent when UnreliableRemoteEvent would be better** — for high-frequency cosmetic updates (position, VFX), unreliable saves bandwidth and CPU.
+- **Using UnreliableRemoteEvent for critical state** — dropped packets will corrupt game state.
+- **No remote surface map** — undocumented remotes make auditing and debugging harder.
+- **Inconsistent naming** — `fireRemote`, `HandleRequest`, `r1` mixed in the same project.
+- **Remotes scattered across ReplicatedStorage** — all remotes should live under a single `Remotes` folder.
+- **BindableEvent in ReplicatedStorage used cross-boundary** — Bindables don't replicate; this will silently fail on the client.
+
+---
+
+# Data Persistence Lens
+
+*Apply this lens when data persistence code changed: player data loading/saving, ProfileStore setup, data migration, or when auditing data integrity for production readiness.*
+
+---
+
+## Data Step 1: Data Library Detection
+
+Search for how player data is stored:
+
+- **ProfileStore found (recommended):** Continue to Step 2.
+- **Raw DataStoreService** used directly: Flag as **High** priority. ProfileStore handles session locking, auto-save, BindToClose, retry logic, and schema reconciliation automatically. Recommend migration. Cross-reference: `roblox-data` §4.
+- **No data persistence found:** Flag if the game needs it.
+
+Verify ProfileStore installation:
+- Wally dependency: `ProfileStore = "madstudioroblox/profileservice@1.4.0"`
+- Or manual ModuleScript in ServerScriptService / ReplicatedStorage
+- ProfileStore is required from the correct path
+
+---
+
+## Data Step 2: Profile Structure Review
+
+Verify the `PROFILE_TEMPLATE` (or equivalent schema):
+
+- Exists and is a table
+- Contains a `DataVersion` field (number, incremented on schema changes)
+- Uses nested structure for non-trivial games (separate `Currency`, `Progression`, `Inventory`, `Settings` sections)
+- Every field has a sensible default value (ProfileStore's `:Reconcile()` fills missing fields from the template)
+- No Instance references in the template (only JSON-compatible types: number, string, boolean, table)
+- Cross-reference: `roblox-data` §6
+
+---
+
+## Data Step 3: Session Locking
+
+Confirm session locking is properly configured:
+
+- `profile:AddUserId(player.UserId)` is called after loading (GDPR compliance)
+- `profile:ListenToRelease()` is connected, kicks the player if lock is stolen
+- `"ForceLoad"` strategy is used (waits for lock, does not fail silently)
+- `profile:Reconcile()` is called after loading to fill missing fields from template
+- Cross-reference: `roblox-data` §5
+
+---
+
+## Data Step 4: Lifecycle Review
+
+Verify the full player data lifecycle:
+
+| Event | Must Do | Cross-Ref |
+|-------|---------|-----------|
+| `PlayerAdded` | Load profile via `LoadProfileAsync`, reconcile, store in cache | `roblox-data` §4 |
+| Mid-game | Mutate `profile.Data.*` directly, leaderstats sync back | `roblox-data` §4 |
+| `PlayerRemoving` | Sync leaderstats to profile, call `profile:Release()` | `roblox-data` §4 |
+| `BindToClose` | If using raw DataStore: parallel saves with 30s timeout | `roblox-data` §10.3 |
+| Auto-save | ProfileStore handles internally. If raw: 5-min interval, exponential retry | `roblox-data` §10.1 |
+
+Flag missing lifecycle handlers, especially `PlayerRemoving` release and `BindToClose`.
+
+---
+
+## Data Step 5: Data Access Patterns
+
+Check how data is read and written:
+
+- Data is mutated via `profile.Data.fieldName`, not by calling DataStore methods directly
+- Leaderstats `IntValue`/`StringValue` are synced back to `profile.Data` before `:Release()`
+- Other scripts access player data via a getter module (`getProfile(player)`), not by directly importing ProfileStore
+- Data writes happen immediately in memory; saves are handled by ProfileStore's auto-save interval
+- Cross-reference: `roblox-data` §4
+
+---
+
+## Data Step 6: Migration Strategy
+
+If the game has evolved its data schema:
+
+- `DataVersion` field exists in the template
+- Migration functions exist for each version bump (v1→v2, v2→v3, etc.)
+- `DataMigrations.migrate(data)` is called after `LoadProfileAsync` and before `:Reconcile()`
+- Migrations are sequential, pure functions (no yields, no side effects)
+- Migration for old data that lacks `DataVersion` defaults to version 1
+- Cross-reference: `roblox-data` §7
+
+---
+
+## Data Step 7: Anti-Patterns
+
+Flag these common data persistence mistakes:
+
+- **Raw DataStore for player state** instead of ProfileStore — missing session locking, auto-save, retry, BindToClose. Cross-ref: `roblox-data` §4.
+- **Saving too frequently** — every coin pickup triggers a DataStore write. Rate limits will be hit. Cross-ref: `roblox-data` §11.
+- **No `pcall` around DataStore calls** — unhandled errors crash the script. Cross-ref: `roblox-data` §11.
+- **Storing Instance references in DataStore** — Instances are not serializable. Store IDs instead. Cross-ref: `roblox-data` §11.
+- **No data validation before save** — NaN values or corrupt data can silently break the save. Cross-ref: `roblox-data` §10.5.
+- **Missing `DataVersion`** — no way to detect or migrate old schema formats. Cross-ref: `roblox-data` §6.
+- **Session locking bypassed** — using raw DataStore without manual lock implementation risks data loss. Cross-ref: `roblox-data` §5.
+- **No `BindToClose` handler** — server shutdown loses unsaved player data. Cross-ref: `roblox-data` §10.3.
+- **Sequential saves in `BindToClose`** — with many players, 30s timeout may be exceeded. Must use `task.spawn` for parallel saves. Cross-ref: `roblox-data` §12.
