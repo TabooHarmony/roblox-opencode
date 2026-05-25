@@ -28,13 +28,15 @@ All GUI code runs on the **client** (LocalScripts). UI objects live under `Start
 **Load Full Reference below only when you need specific layout examples or implementation patterns.**
 
 Key rules:
+- **Default framework: Fusion** (dphfox/Fusion, MIT). Use for greenfield game UI. Follow existing patterns on established projects.
+- Reference implementations in `references/` use Fusion 0.2 idioms (New, Value, Computed, ForPairs, Children, Spring).
+- Source patterns: VirtualButFake/fusion-components (MIT, 31 components).
 - Mobile-first: design for phone, scale up. Touch targets minimum 48x48px.
 - Scale (0-1 proportional) for position/size. Offset only for fixed padding/icons.
 - Container Frame Rule: every logical group gets a Frame with layout modifier inside.
 - UIListLayout/UIGridLayout: set on parent Frame, children auto-arrange. AutomaticSize on parent.
 - ScreenGui.ResetOnSpawn = false for persistent UI. IgnoreGuiInset = true for fullscreen.
 - ZIndex for layering within same ScreenGui. DisplayOrder for ScreenGui priority.
-- TextScaled = true + UITextSizeConstraint (min/max) for responsive text.
 - Never use absolute pixel sizes for main containers. UISizeConstraint for min/max bounds.
 - ScrollingFrame: set CanvasSize or AutomaticCanvasSize. UIListLayout inside for content.
 - Common AI mistake: forgetting to set LayoutOrder on children when using layout modifiers.
