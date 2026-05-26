@@ -41,7 +41,7 @@ test("runSetup copies skills, vendor, config, and AGENTS.md", async () => {
 
     // AGENTS.md has the managed block
     const agents = readFileSync(join(dir, "AGENTS.md"), "utf-8")
-    assert.ok(agents.includes("<!-- roblox-opencode 1.0.1 BEGIN"))
+    assert.ok(agents.includes("<!-- roblox-opencode 1.0.2 BEGIN"))
     assert.ok(agents.includes("<!-- roblox-opencode END -->"))
     assert.ok(agents.includes("Sharp Edges"))
   } finally {
@@ -64,7 +64,7 @@ test("runSetup preserves existing AGENTS.md content outside markers", async () =
     const agents = readFileSync(join(dir, "AGENTS.md"), "utf-8")
     assert.ok(agents.includes("# My Project"))
     assert.ok(agents.includes("Custom instructions here."))
-    assert.ok(agents.includes("<!-- roblox-opencode 1.0.1 BEGIN"))
+    assert.ok(agents.includes("<!-- roblox-opencode 1.0.2 BEGIN"))
   } finally {
     rmSync(dir, { recursive: true, force: true })
   }
