@@ -20,11 +20,13 @@
 
 ```json
 {
-  "plugin": ["roblox-opencode"]
+  "plugin": ["github:TabooHarmony/roblox-opencode"]
 }
 ```
 
 Add to your `opencode.json`, restart, then run `/setup-game` in your project.
+
+> npm publish is coming soon. For now, the GitHub specifier works via Bun's package resolution.
 
 ## What it does
 
@@ -104,7 +106,7 @@ The AI loads relevant skills on-demand based on your prompt. Ask it to build a s
 
 ## Update
 
-Update the version in `opencode.json`, restart OpenCode, and run `/setup-game` again to refresh skills and vendor libs. Omit the version to track latest. Content outside managed markers in `AGENTS.md` is preserved.
+Update the version in `opencode.json`, restart OpenCode, and run `/setup-game` again to refresh skills and vendor libs. Content outside managed markers in `AGENTS.md` is preserved.
 
 ## Contributors
 
