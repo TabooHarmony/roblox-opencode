@@ -1411,7 +1411,7 @@ local function process(shouldContinue: boolean) end
 
 local module = {}
 function module:onReturn() end
-function module:resume() end
+function module:onResume() end
 ```
 
 ### Equality and Type Coercion
