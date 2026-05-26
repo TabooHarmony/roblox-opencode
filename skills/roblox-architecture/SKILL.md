@@ -1,7 +1,7 @@
 ---
 name: roblox-architecture
 description: Service hierarchy, 7 foundational patterns, cross-platform input. Client-server architecture, module patterns, framework options.
-last_reviewed: 2026-05-21
+last_reviewed: 2026-05-26
 ---
 
 <!-- Source: brockmartin/roblox-game-skill (MIT) -->
@@ -259,12 +259,17 @@ end)
 
 ### RunContext (Script Behavior Override)
 
-By default, `Script` runs on the server. Setting `Script.RunContext` changes this:
+`Script.RunContext` overrides where a script runs, breaking the traditional container-based restrictions:
 
-- **`Enum.RunContext.Server`** (default) - runs on the server, only in server-valid containers
-- **`Enum.RunContext.Client`** - runs on the client, can be placed ANYWHERE (Workspace, ReplicatedStorage, etc.)
+| Value | Behavior | Notes |
+|-------|----------|-------|
+| `Enum.RunContext.Legacy` | Script runs only in traditional server containers (ServerScriptService, ServerStorage) | **Default** when not set |
+| `Enum.RunContext.Server` | Script runs anywhere in the place, on the server | Useful for scripts in ReplicatedStorage or Workspace |
+| `Enum.RunContext.Client` | Script runs anywhere in the place, on the client | Place in Workspace for local effects, or ReplicatedStorage for shared UI logic |
 
-`RunContext = Client` is powerful for workspace-local effects, proximity scripts, or anything the client sees but doesn't belong in StarterPlayerScripts:
+`Legacy` replicates the old behavior - `Script` must be in server-valid containers, `LocalScript` in client-valid containers. Setting `Server` or `Client` frees the script from those container restrictions.
+
+`RunContext = Client` is powerful for workspace-local effects or anything the client sees but doesn't belong in StarterPlayerScripts:
 
 ```lua
 -- A Script in Workspace with RunContext = Client
@@ -275,6 +280,15 @@ local RunService = game:GetService("RunService")
 RunService.Heartbeat:Connect(function(dt)
     part.CFrame *= CFrame.Angles(0, math.rad(30 * dt), 0)
 end)
+```
+
+`RunContext = Server` lets you place server scripts outside the usual server containers:
+
+```lua
+-- A Script in ReplicatedStorage with RunContext = Server
+-- Server logic lives alongside shared modules
+local SharedConfig = require(script.Parent.SharedConfig)
+print(`Server running with: {SharedConfig.setting}`)
 ```
 
 > **Note:** `LocalScript` does NOT have RunContext. It always runs on the client in client-valid containers only. Use `Script` + `RunContext = Client` when you need client scripts outside the usual client containers.

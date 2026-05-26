@@ -2,7 +2,7 @@
 name: roblox-luau-mastery
 description: >
   Luau language fundamentals, type system, OOP, deprecation table, error patterns.
-last_reviewed: 2026-05-21
+last_reviewed: 2026-05-26
 ---
 
 <!-- Source: brockmartin/roblox-game-skill (MIT) -->
@@ -50,10 +50,11 @@ Key rules:
 - Always use `task.wait/spawn/delay` (never deprecated `wait/spawn/delay`)
 - Instance.new: configure properties THEN set Parent last (replication race)
 - Services: `game:GetService("Name")` at top of script, stored in locals
-- OOP: `.` for constructors, `:` for methods. `__index = self` pattern.
+- Methods: use `:` (implicit self) for instance methods, `.` (explicit self) for constructors/static methods. Prefix private methods with `_`.
 - Type system: gradual typing, `typeof()` for narrowing, `::` for casting, `export type` for cross-module
 - Prefer backtick interpolation over `..` concatenation
 - Use vendored libs (Promise, Trove, Signal, Comm, Component, ProfileStore) over raw equivalents
+- Local function order: callees above callers (no hoisting). Forward-declare for mutual recursion.
 
 ---
 
@@ -1155,6 +1156,30 @@ end
 return InventoryManager
 ```
 
+### Method Definitions
+
+- Use `:` (colon) for instance methods - self is implicit
+- Use `.` (dot) for constructors and static methods - self must be explicit
+
+```luau
+-- : for instance methods (self is implicit)
+function MyClass:methodName()
+    -- self refers to the instance
+end
+
+-- . for constructors and static methods (self must be explicit)
+function MyClass.new()
+    local self = setmetatable({}, MyClass)
+    return self
+end
+
+-- Calling conventions match definition
+obj:methodName()        -- colon: self passed implicitly
+MyClass.new()           -- dot: no self
+```
+
+**Key rule:** `:` is syntactic sugar for `.` with automatic `self` injection. `obj:method(a)` is equivalent to `obj.method(obj, a)`.
+
 ### General Guidelines
 
 - Use `local` for every variable and function declaration.
@@ -1167,6 +1192,8 @@ return InventoryManager
 - Use `pcall` / `xpcall` around any call that can fail (DataStores, HTTP, etc.).
 - Use backtick interpolation (`{expr}`) for all string building. Never use `..` concatenation.
 - Use `table.freeze()` for configuration tables that should not be modified.
+- Never use Luau reserved keywords (`return`, `continue`, `local`, `end`, `function`, etc.) as identifiers - parameter names, local variables, function names, or module methods like `module:return()` all cause parse-time syntax errors.
+- Declare local functions before they are called - Luau has no hoisting. Callees above callers. Use forward declaration (`local fnName`) for mutual recursion.
 
 ---
 
@@ -1365,10 +1392,7 @@ local obj = MyClass.new()
 obj:doSomething() --> ERROR: attempt to call a nil value
 -- Because __index is not set, method lookup fails
 
--- Common mistake: using . instead of : for method definitions
-function MyClass.method(self: any) end  -- explicit self with . (verbose, avoid)
-function MyClass:method() end            -- implicit self with : (idiomatic, use this)
--- Use : for all instance methods. Use . only for static constructors (new).
+-- See ### Method Definitions in Best Practices for . vs : conventions
 
 -- Common mistake: modifying the metatable instead of the instance
 function MyClass:setName(name: string)
@@ -1379,6 +1403,81 @@ function MyClass:setName(name: string)
     self.name = name
 end
 ```
+
+### Reserved Keywords as Identifiers
+
+Luau reserves certain words for the language syntax. These cannot be used as identifiers - variable names, function names, parameter names, or module method names:
+
+```
+and, break, do, else, elseif, end, false, for, function, if, in,
+local, nil, not, or, repeat, return, then, true, until, while,
+continue (Luau-specific)
+```
+
+```luau
+-- BAD: keyword used as parameter name - syntax error
+local function onComplete(return: number) end  -- ERROR
+local function process(continue: boolean) end   -- ERROR
+
+-- BAD: keyword used as module method - syntax error
+local module = {}
+function module:return() end   -- ERROR
+function module:continue() end -- ERROR
+```
+
+Simply rename to avoid the keyword:
+
+```luau
+-- GOOD: renamed to avoid reserved keyword
+local function onComplete(result: number) end
+local function process(shouldContinue: boolean) end
+
+local module = {}
+function module:onReturn() end
+function module:onResume() end
+```
+
+### Local Function Declaration Order
+
+Luau has no hoisting - a `local function` is invisible to code above its declaration. This is a common pitfall because many languages (JS, Lua, Python) do hoist function declarations.
+
+```luau
+-- BAD: helperB is nil when functionA runs
+local function functionA()
+    helperB() -- ERROR: attempt to call a nil value
+end
+
+local function helperB()
+    print("helper")
+end
+
+-- GOOD: callee declared before caller
+local function helperB()
+    print("helper")
+end
+
+local function functionA()
+    helperB() -- works
+end
+```
+
+For mutual recursion (A calls B, B calls A), use a forward declaration:
+
+```luau
+local functionB  -- forward declaration (declares variable, no assignment)
+
+local function functionA(x: number)
+    if x <= 0 then return end
+    functionB(x - 1)
+end
+
+function functionB(x: number) -- no 'local' here (already declared above)
+    if x <= 0 then return end
+    functionA(x - 1)
+end
+```
+
+**Rule:** Callees above callers, always. If a `local function` is called by code above its definition, that is a runtime nil-error bug.
 
 ### Equality and Type Coercion
 
