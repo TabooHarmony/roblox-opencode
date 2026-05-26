@@ -2,7 +2,7 @@
 name: roblox-luau-mastery
 description: >
   Luau language fundamentals, type system, OOP, deprecation table, error patterns.
-last_reviewed: 2026-05-21
+last_reviewed: 2026-05-26
 ---
 
 <!-- Source: brockmartin/roblox-game-skill (MIT) -->
@@ -1167,6 +1167,7 @@ return InventoryManager
 - Use `pcall` / `xpcall` around any call that can fail (DataStores, HTTP, etc.).
 - Use backtick interpolation (`{expr}`) for all string building. Never use `..` concatenation.
 - Use `table.freeze()` for configuration tables that should not be modified.
+- Never use Luau reserved keywords (`return`, `continue`, `local`, `end`, `function`, etc.) as identifiers - parameter names, local variables, function names, or module methods like `module:return()` all cause parse-time syntax errors.
 
 ---
 
@@ -1378,6 +1379,39 @@ function MyClass:setName(name: string)
     -- GOOD: set on the instance
     self.name = name
 end
+```
+
+### Reserved Keywords as Identifiers
+
+Luau reserves certain words for the language syntax. These cannot be used as identifiers - variable names, function names, parameter names, or module method names:
+
+```
+and, break, do, else, elseif, end, false, for, function, if, in,
+local, nil, not, or, repeat, return, then, true, until, while,
+continue (Luau-specific)
+```
+
+```luau
+-- BAD: keyword used as parameter name - syntax error
+local function onComplete(return: number) end  -- ERROR
+local function process(continue: boolean) end   -- ERROR
+
+-- BAD: keyword used as module method - syntax error
+local module = {}
+function module:return() end   -- ERROR
+function module:continue() end -- ERROR
+```
+
+Simply rename to avoid the keyword:
+
+```luau
+-- GOOD: renamed to avoid reserved keyword
+local function onComplete(result: number) end
+local function process(shouldContinue: boolean) end
+
+local module = {}
+function module:onReturn() end
+function module:resume() end
 ```
 
 ### Equality and Type Coercion
