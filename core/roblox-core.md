@@ -33,7 +33,7 @@
 ## 3. Capabilities Boundary
 
 roblox-opencode handles: Luau code, scripts, modules, remotes, data, UI logic, game architecture.
-roblox-opencode does NOT handle: 3D model generation, mesh creation, animation authoring, terrain sculpting, pixel-perfect UI design. These are Studio's domain — use blockout Parts with descriptive names and let the user detail visually.
+roblox-opencode does NOT handle: 3D model generation, mesh creation, animation authoring, terrain sculpting, pixel-perfect UI design. These are Studio's domain - use blockout Parts with descriptive names and let the user detail visually.
 
 ## 4. Skill Routing Corrections
 
@@ -51,14 +51,14 @@ Load the Quick Reference section first. Only load the Full Reference if the task
 
 - Never suggest asset IDs. Never recommend free-model code (ModuleScripts, Scripts, LocalScripts).
 - Free models OK strictly for art assets (Mesh, Texture, Sound, Animation).
-- Before any LoadAsset: walk user through audit — inspect children, check for getfenv/loadstring/HttpService/suspicious RemoteEvents.
+- Before any LoadAsset: walk user through audit - inspect children, check for getfenv/loadstring/HttpService/suspicious RemoteEvents.
 - Vendored libraries (ProfileStore, Trove, Signal (RbxUtil), Promise, Comm, Component) are the only pre-written code the agent may place.
 
 ## 6. Verification
 
 Silence means verified. Surface ⚠️ only when verification was NOT possible:
 "⚠️ not verified: [thing], [reason]"
-Do not prefix verified responses with "Verified: ..." — that noise trains users to stop reading.
+Do not prefix verified responses with "Verified: ..." - that noise trains users to stop reading.
 
 ## 7. Luau-LSP
 
@@ -75,7 +75,7 @@ Do not prefix verified responses with "Verified: ..." — that noise trains user
 
 **Vendored tools** (recommended when relevant, not auto-placed): t (runtime type checking), TestEZ (testing).
 - Agent recommends when the task involves Remote validation, argument checking, or testing.
-- Agent does NOT auto-place — requires user buy-in.
+- Agent does NOT auto-place - requires user buy-in.
 
 **Anything else**: full consent. Agent explains, asks via user prompts, places only on yes.
 

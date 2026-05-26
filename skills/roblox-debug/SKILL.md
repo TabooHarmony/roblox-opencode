@@ -4,7 +4,7 @@ description: "Iterative debug loop for Luau/Roblox issues"
 tags: [roblox, debug, luau, troubleshooting]
 ---
 
-# /debug — Iterative Debug Loop
+# /debug - Iterative Debug Loop
 
 You are performing an iterative debug loop on a Roblox project. Follow these 7 steps. The loop has a maximum of **5 iterations** before escalating to the user.
 
@@ -36,11 +36,11 @@ Read the relevant script(s) from the synced folder (or via MCP if in MCP-Only Mo
 Analyze the error against common Roblox issue categories. Load `skills/roblox-sharp-edges/SKILL.md` for known gotchas.
 
 Categorize the error:
-- **Syntax** — Missing `end`, typos, incorrect syntax
-- **Runtime** — nil access, missing service, Instance destroyed
-- **Logic** — Wrong calculation, incorrect condition, missing state
-- **Security** — Client-side issue that should be server-side, unvalidated remote
-- **Performance** — Timeout, memory, script contention
+- **Syntax** - Missing `end`, typos, incorrect syntax
+- **Runtime** - nil access, missing service, Instance destroyed
+- **Logic** - Wrong calculation, incorrect condition, missing state
+- **Security** - Client-side issue that should be server-side, unvalidated remote
+- **Performance** - Timeout, memory, script contention
 
 If the `roblox-sharp-edges` skill is available, load it for known gotchas. Otherwise, proceed with general Luau knowledge.
 
@@ -89,11 +89,11 @@ Track iteration count. After 5 attempts, output:
 
 Document the completed fix:
 
-1. **Bug description** — What was happening
-2. **Root cause** — Why it was happening
-3. **Fix applied** — Exact changes made
-4. **Verification** — How it was confirmed fixed
-5. **Related risks** — Other places that might have the same issue
-6. **Prevention** — Pattern to follow to avoid this class of bug in the future
+1. **Bug description** - What was happening
+2. **Root cause** - Why it was happening
+3. **Fix applied** - Exact changes made
+4. **Verification** - How it was confirmed fixed
+5. **Related risks** - Other places that might have the same issue
+6. **Prevention** - Pattern to follow to avoid this class of bug in the future
 
 If the bug revealed a systemic issue, recommend running `/code-review` for a full scan.

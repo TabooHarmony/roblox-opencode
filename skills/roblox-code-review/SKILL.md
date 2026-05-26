@@ -4,7 +4,7 @@ description: "Code review with security, performance, and monetization lenses fo
 tags: [roblox, code-review, security, performance, monetization, networking, data-persistence]
 ---
 
-# /code-review — Code Quality Review
+# /code-review - Code Quality Review
 
 You are performing a code quality review on a Roblox project. Follow these 8 steps. Apply the relevant lens based on what changed. Don't apply all lenses every time.
 
@@ -76,12 +76,12 @@ Check for:
 ## Step 4: Architecture Review
 
 Check:
-- Module boundaries — Does each module have a single responsibility?
-- Dependency direction — Do modules depend on abstractions, not concrete implementations?
-- Circular requires — Any modules that depend on each other?
-- Separation of concerns — Server vs Client logic properly separated
-- Framework usage — If using a framework, is it used consistently?
-- Configuration — Hardcoded values should be in config modules
+- Module boundaries - Does each module have a single responsibility?
+- Dependency direction - Do modules depend on abstractions, not concrete implementations?
+- Circular requires - Any modules that depend on each other?
+- Separation of concerns - Server vs Client logic properly separated
+- Framework usage - If using a framework, is it used consistently?
+- Configuration - Hardcoded values should be in config modules
 
 ---
 
@@ -116,17 +116,17 @@ Quick scan for:
 
 Rate overall quality:
 
-- **A** — Production-ready. Clean, organized, secure, performant
-- **B** — Solid with minor issues. Safe to ship with minor cleanup
-- **C** — Functional but needs work. Ship with caveats
-- **D** — Significant issues. Needs refactoring before ship
-- **F** — Critical problems. Do not ship in current state
+- **A** - Production-ready. Clean, organized, secure, performant
+- **B** - Solid with minor issues. Safe to ship with minor cleanup
+- **C** - Functional but needs work. Ship with caveats
+- **D** - Significant issues. Needs refactoring before ship
+- **F** - Critical problems. Do not ship in current state
 
 List findings by severity:
-- **Critical** — Security vulnerabilities, data loss risk, crashes
-- **High** — Memory leaks, performance bottlenecks, broken features
-- **Medium** — Code smells, deprecated APIs, poor organization
-- **Low** — Style inconsistencies, missing documentation
+- **Critical** - Security vulnerabilities, data loss risk, crashes
+- **High** - Memory leaks, performance bottlenecks, broken features
+- **Medium** - Code smells, deprecated APIs, poor organization
+- **Low** - Style inconsistencies, missing documentation
 
 For each finding, provide:
 1. File and line (or function name)
@@ -139,9 +139,9 @@ For each finding, provide:
 
 If significant issues found, suggest refactoring priorities:
 
-1. **Immediate** — Must fix before next publish
-2. **Short-term** — Fix in the next development cycle
-3. **Long-term** — Plan for when the project grows
+1. **Immediate** - Must fix before next publish
+2. **Short-term** - Fix in the next development cycle
+3. **Long-term** - Plan for when the project grows
 
 For each suggestion:
 - What to change
@@ -171,11 +171,11 @@ Record every remote found with:
 ## Security Step 2: Validation Check
 
 For each remote, verify:
-- **Argument type checking** — Server validates `typeof(arg)` for every parameter
-- **Range validation** — Numeric inputs checked against min/max bounds
-- **Cooldown enforcement** — Rate limiting prevents spam/exploitation
-- **Authorization check** — Server verifies the requesting player owns the action
-- **Sanitization** — String inputs cleaned, no injection vectors
+- **Argument type checking** - Server validates `typeof(arg)` for every parameter
+- **Range validation** - Numeric inputs checked against min/max bounds
+- **Cooldown enforcement** - Rate limiting prevents spam/exploitation
+- **Authorization check** - Server verifies the requesting player owns the action
+- **Sanitization** - String inputs cleaned, no injection vectors
 
 Flag any remote that accepts input without full server-side validation.
 
@@ -220,10 +220,10 @@ Verify all remotes have per-player rate limiting:
 
 Categorize findings:
 
-- **Critical** — Exploitable for direct advantage (free currency, item duplication, account takeover)
-- **High** — Data exposure or corruption possible
-- **Medium** — Potential for abuse with moderate effort
-- **Low** — Best practice violation, hard to exploit
+- **Critical** - Exploitable for direct advantage (free currency, item duplication, account takeover)
+- **High** - Data exposure or corruption possible
+- **Medium** - Potential for abuse with moderate effort
+- **Low** - Best practice violation, hard to exploit
 
 For each vulnerability:
 1. Remote/method affected
@@ -308,11 +308,11 @@ Check for:
 ## Performance Step 5: Network Audit
 
 Check:
-- RemoteEvent frequency — Are updates sent every frame when 1/sec would suffice?
-- Data size per event — Are payloads unnecessarily large?
-- Unnecessary replication — Is data sent to all players when only some need it?
-- `FireAllClients` vs `FireClient` — Target specific players when possible
-- Debouncing — Are rapid-fire remotes properly debounced server-side?
+- RemoteEvent frequency - Are updates sent every frame when 1/sec would suffice?
+- Data size per event - Are payloads unnecessarily large?
+- Unnecessary replication - Is data sent to all players when only some need it?
+- `FireAllClients` vs `FireClient` - Target specific players when possible
+- Debouncing - Are rapid-fire remotes properly debounced server-side?
 
 ---
 
@@ -320,10 +320,10 @@ Check:
 
 Generate prioritized list:
 
-- **Critical** — Causes crashes or completely unplayable experience
-- **High** — Noticeable lag, frame drops, or rubber-banding
-- **Medium** — Suboptimal but functional, wasted resources
-- **Low** — Minor optimization opportunity
+- **Critical** - Causes crashes or completely unplayable experience
+- **High** - Noticeable lag, frame drops, or rubber-banding
+- **Medium** - Suboptimal but functional, wasted resources
+- **Low** - Minor optimization opportunity
 
 For each item:
 1. What's slow
@@ -350,11 +350,11 @@ Common fixes:
 ## Performance Step 8: Before/After
 
 Document improvements:
-1. **Metric** — What was measured (frame time, memory, network traffic)
-2. **Before** — Original value
-3. **After** — Improved value
-4. **Change** — Percentage improvement
-5. **Remaining** — What's left to optimize
+1. **Metric** - What was measured (frame time, memory, network traffic)
+2. **Before** - Original value
+3. **After** - Improved value
+4. **Change** - Percentage improvement
+5. **Remaining** - What's left to optimize
 
 ---
 
@@ -419,10 +419,10 @@ Based on genre best practices, suggest monetization the game is missing.
 ## Monetization Step 5: Pricing Analysis
 
 Compare prices against Roblox norms:
-- **Entry point** — 25-49 Robux for impulse buys
-- **Mid-tier** — 99-199 Robux for meaningful upgrades
-- **Premium** — 499-999 Robux for VIP/lifetime benefits
-- **Consumables** — 10-50 Robux for repeat purchases
+- **Entry point** - 25-49 Robux for impulse buys
+- **Mid-tier** - 99-199 Robux for meaningful upgrades
+- **Premium** - 499-999 Robux for VIP/lifetime benefits
+- **Consumables** - 10-50 Robux for repeat purchases
 
 Evaluate Robux-to-value ratio, price anchoring, and bundle discounts.
 
@@ -452,10 +452,10 @@ Evaluate if Rewarded Video Ads would fit:
 ## Monetization Step 8: Ethical Review
 
 Flag potentially predatory patterns:
-- Loot boxes / gambling mechanics — Are odds disclosed?
-- FOMO pressure — Limited-time offers that pressure quick decisions?
-- Pay-to-win — Can paying players dominate free players unfairly?
-- Dark patterns — Confusing UI that leads to accidental purchases?
+- Loot boxes / gambling mechanics - Are odds disclosed?
+- FOMO pressure - Limited-time offers that pressure quick decisions?
+- Pay-to-win - Can paying players dominate free players unfairly?
+- Dark patterns - Confusing UI that leads to accidental purchases?
 
 ---
 
@@ -463,9 +463,9 @@ Flag potentially predatory patterns:
 
 Prioritized list of monetization improvements:
 
-- **Must-have** — Items that directly increase revenue
-- **Should-have** — Items that improve conversion or retention
-- **Nice-to-have** — Items that optimize existing revenue
+- **Must-have** - Items that directly increase revenue
+- **Should-have** - Items that improve conversion or retention
+- **Nice-to-have** - Items that optimize existing revenue
 
 For each recommendation:
 1. What to implement
@@ -517,7 +517,7 @@ Flag any remote using the wrong type:
 
 ## Networking Step 3: RemoteFunction Check
 
-`RemoteFunction` is a blocking pattern — the caller yields until the receiver returns. This can cause lag if overused.
+`RemoteFunction` is a blocking pattern - the caller yields until the receiver returns. This can cause lag if overused.
 
 Verify:
 - `:InvokeServer` is used sparingly (not per-frame or in tight loops)
@@ -532,7 +532,7 @@ Verify:
 `BindableEvent` and `BindableFunction` are strictly intra-boundary (Server→Server or Client→Client).
 
 Check:
-- No `BindableEvent` / `BindableFunction` in ReplicatedStorage that is fired by server and listened to by client (use `RemoteEvent` instead — Bindables don't replicate)
+- No `BindableEvent` / `BindableFunction` in ReplicatedStorage that is fired by server and listened to by client (use `RemoteEvent` instead - Bindables don't replicate)
 - Client-side `BindableEvent`s are used for decoupling LocalScripts (cleaner than direct module references)
 - Server-side `BindableEvent`s are used for service-to-service pub/sub within the same script context
 - No orphaned or unused Bindable instances left in the hierarchy
@@ -549,7 +549,7 @@ Verify:
 - Client-side has fallback logic (if a cosmetic event is dropped, the game still functions)
 - Server-side does not rely on unreliable delivery for authoritative state
 
-Recommended pattern — separate critical and cosmetic remotes:
+Recommended pattern - separate critical and cosmetic remotes:
 ```luau
 -- Critical: reliable RemoteEvent
 local PurchaseRequest = ReplicatedStorage.Remotes.PurchaseRequest  -- RemoteEvent
@@ -574,14 +574,14 @@ Check:
 
 Flag these common networking mistakes:
 
-- **Using RemoteFunction in a hot path** — blocks the caller. Prefer RemoteEvent.
-- **Using RemoteEvent when BindableEvent would suffice** — a remote that only reaches scripts on the same player should be a BindableEvent, avoiding network overhead.
-- **Using RemoteEvent when UnreliableRemoteEvent would be better** — for high-frequency cosmetic updates (position, VFX), unreliable saves bandwidth and CPU.
-- **Using UnreliableRemoteEvent for critical state** — dropped packets will corrupt game state.
-- **No remote surface map** — undocumented remotes make auditing and debugging harder.
-- **Inconsistent naming** — `fireRemote`, `HandleRequest`, `r1` mixed in the same project.
-- **Remotes scattered across ReplicatedStorage** — all remotes should live under a single `Remotes` folder.
-- **BindableEvent in ReplicatedStorage used cross-boundary** — Bindables don't replicate; this will silently fail on the client.
+- **Using RemoteFunction in a hot path** - blocks the caller. Prefer RemoteEvent.
+- **Using RemoteEvent when BindableEvent would suffice** - a remote that only reaches scripts on the same player should be a BindableEvent, avoiding network overhead.
+- **Using RemoteEvent when UnreliableRemoteEvent would be better** - for high-frequency cosmetic updates (position, VFX), unreliable saves bandwidth and CPU.
+- **Using UnreliableRemoteEvent for critical state** - dropped packets will corrupt game state.
+- **No remote surface map** - undocumented remotes make auditing and debugging harder.
+- **Inconsistent naming** - `fireRemote`, `HandleRequest`, `r1` mixed in the same project.
+- **Remotes scattered across ReplicatedStorage** - all remotes should live under a single `Remotes` folder.
+- **BindableEvent in ReplicatedStorage used cross-boundary** - Bindables don't replicate; this will silently fail on the client.
 
 ---
 
@@ -676,12 +676,12 @@ If the game has evolved its data schema:
 
 Flag these common data persistence mistakes:
 
-- **Raw DataStore for player state** instead of ProfileStore — missing session locking, auto-save, retry, BindToClose. Cross-ref: `roblox-data` §4.
-- **Saving too frequently** — every coin pickup triggers a DataStore write. Rate limits will be hit. Cross-ref: `roblox-data` §11.
-- **No `pcall` around DataStore calls** — unhandled errors crash the script. Cross-ref: `roblox-data` §11.
-- **Storing Instance references in DataStore** — Instances are not serializable. Store IDs instead. Cross-ref: `roblox-data` §11.
-- **No data validation before save** — NaN values or corrupt data can silently break the save. Cross-ref: `roblox-data` §10.5.
-- **Missing `DataVersion`** — no way to detect or migrate old schema formats. Cross-ref: `roblox-data` §6.
-- **Session locking bypassed** — using raw DataStore without manual lock implementation risks data loss. Cross-ref: `roblox-data` §5.
-- **No `BindToClose` handler** — server shutdown loses unsaved player data. Cross-ref: `roblox-data` §10.3.
-- **Sequential saves in `BindToClose`** — with many players, 30s timeout may be exceeded. Must use `task.spawn` for parallel saves. Cross-ref: `roblox-data` §12.
+- **Raw DataStore for player state** instead of ProfileStore - missing session locking, auto-save, retry, BindToClose. Cross-ref: `roblox-data` §4.
+- **Saving too frequently** - every coin pickup triggers a DataStore write. Rate limits will be hit. Cross-ref: `roblox-data` §11.
+- **No `pcall` around DataStore calls** - unhandled errors crash the script. Cross-ref: `roblox-data` §11.
+- **Storing Instance references in DataStore** - Instances are not serializable. Store IDs instead. Cross-ref: `roblox-data` §11.
+- **No data validation before save** - NaN values or corrupt data can silently break the save. Cross-ref: `roblox-data` §10.5.
+- **Missing `DataVersion`** - no way to detect or migrate old schema formats. Cross-ref: `roblox-data` §6.
+- **Session locking bypassed** - using raw DataStore without manual lock implementation risks data loss. Cross-ref: `roblox-data` §5.
+- **No `BindToClose` handler** - server shutdown loses unsaved player data. Cross-ref: `roblox-data` §10.3.
+- **Sequential saves in `BindToClose`** - with many players, 30s timeout may be exceeded. Must use `task.spawn` for parallel saves. Cross-ref: `roblox-data` §12.

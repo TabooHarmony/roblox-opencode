@@ -87,40 +87,40 @@ When no MCP server is connected, generate self-contained Luau code blocks for co
 
 ### Autonomous Build
 
-1. **SCAFFOLD** — `run_code` to print current hierarchy → plan structure → `run_code` to create folders/instances
-2. **GENERATE** — For each system: `run_code` to create Script/LocalScript/ModuleScript instances, wire RemoteEvents
-3. **INSERT ASSETS** — `insert_model` for Creator Store assets, position via `run_code`
-4. **TEST** — `start_stop_play` → `get_console_output` → `start_stop_play` to stop
-5. **ITERATE** — Fix errors → return to step 4 (max 5 iterations)
+1. **SCAFFOLD** - `run_code` to print current hierarchy → plan structure → `run_code` to create folders/instances
+2. **GENERATE** - For each system: `run_code` to create Script/LocalScript/ModuleScript instances, wire RemoteEvents
+3. **INSERT ASSETS** - `insert_model` for Creator Store assets, position via `run_code`
+4. **TEST** - `start_stop_play` → `get_console_output` → `start_stop_play` to stop
+5. **ITERATE** - Fix errors → return to step 4 (max 5 iterations)
 
 ### Debug Loop
 
 Bounded retries (max 5 iterations):
 
-1. **DETECT** — `get_console_output` → parse for script name, line, error type
-2. **LOCATE** — `run_code` to print script source → analyze root cause
-3. **FIX** — Generate corrected code → `run_code` to replace script source (create undo waypoint first)
-4. **VERIFY** — `start_stop_play` → `get_console_output` → check if error persists
-5. **ITERATE** — If persists and attempts < 5 → step 2; if resolved → report; if ≥ 5 → report findings
+1. **DETECT** - `get_console_output` → parse for script name, line, error type
+2. **LOCATE** - `run_code` to print script source → analyze root cause
+3. **FIX** - Generate corrected code → `run_code` to replace script source (create undo waypoint first)
+4. **VERIFY** - `start_stop_play` → `get_console_output` → check if error persists
+5. **ITERATE** - If persists and attempts < 5 → step 2; if resolved → report; if ≥ 5 → report findings
 
 ### Project Exploration
 
-1. **STRUCTURE** — `run_code` to traverse and print full hierarchy
-2. **SCRIPTS** — `run_code` to find all Script/LocalScript/ModuleScript instances, print sources of key scripts
-3. **ARCHITECTURE** — Map module dependencies, remotes, data flow from printed output
-4. **REPORT** — Summarize services, script count, architecture, potential issues
+1. **STRUCTURE** - `run_code` to traverse and print full hierarchy
+2. **SCRIPTS** - `run_code` to find all Script/LocalScript/ModuleScript instances, print sources of key scripts
+3. **ARCHITECTURE** - Map module dependencies, remotes, data flow from printed output
+4. **REPORT** - Summarize services, script count, architecture, potential issues
 
 ## Safety Guidelines
 
 ### Pre-Operation Checks
 
-1. **Check Studio mode** — call `get_studio_mode` before any operation. Do not modify DataModel during playtest.
+1. **Check Studio mode** - call `get_studio_mode` before any operation. Do not modify DataModel during playtest.
 2. **Create undo waypoints** before bulk or destructive operations:
    ```luau
    game:GetService("ChangeHistoryService"):SetWaypoint("Before: description")
    ```
-3. **Read before write** — inspect script source before overwriting.
-4. **Verify instance existence** — check target path resolves before modifying.
+3. **Read before write** - inspect script source before overwriting.
+4. **Verify instance existence** - check target path resolves before modifying.
 
 ### Destructive Operation Safeguards
 

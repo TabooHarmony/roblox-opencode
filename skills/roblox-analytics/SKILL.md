@@ -225,14 +225,14 @@ AnalyticsService:LogCustomEvent(player, "EnemyKill_Magic")
 ### Common Event Taxonomy
 
 **Retention signals:**
-- `SessionStart` — counter, fire on PlayerAdded
-- `SessionDuration` — value (seconds), fire on PlayerRemoving
-- `DayNReturn` — counter with custom field for day number (Day1, Day7, Day30)
+- `SessionStart` - counter, fire on PlayerAdded
+- `SessionDuration` - value (seconds), fire on PlayerRemoving
+- `DayNReturn` - counter with custom field for day number (Day1, Day7, Day30)
 
 **Engagement:**
-- `FeatureUsed` — custom field 1 = feature name
-- `QuestCompleted` — custom field 1 = quest ID
-- `LevelReached` — value = level number
+- `FeatureUsed` - custom field 1 = feature name
+- `QuestCompleted` - custom field 1 = quest ID
+- `LevelReached` - value = level number
 
 **Monetization funnel:**
 - Funnel "Purchase": OpenedShop → ViewedItem → ClickedBuy → Confirmed → Granted

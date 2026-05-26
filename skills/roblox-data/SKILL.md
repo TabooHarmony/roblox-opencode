@@ -28,7 +28,7 @@ Player Leaves -->  Server saves to DataStore     -->  Data persists for next ses
 | **ProfileStore** | **Production games (USE THIS)** | Medium |
 | Custom wrapper | Specific advanced requirements | High |
 
-> **Use ProfileStore for any game that will ship.** Raw DataStore examples in sections 2-3 exist to explain the underlying system. Do NOT implement manual auto-save, session locking, BindToClose handlers, or retry logic — ProfileStore handles all of this automatically. Section 4 is the production pattern.
+> **Use ProfileStore for any game that will ship.** Raw DataStore examples in sections 2-3 exist to explain the underlying system. Do NOT implement manual auto-save, session locking, BindToClose handlers, or retry logic - ProfileStore handles all of this automatically. Section 4 is the production pattern.
 
 **Prerequisite:** Enable API Services in Roblox Studio under **Game Settings > Security > Enable Studio Access to API Services**. Without this, DataStore calls will fail in Studio testing.
 
@@ -56,7 +56,7 @@ Key rules:
 
 ## 2. Raw DataStore API (Reference Only)
 
-> **For production games, skip to section 4 (ProfileStore).** This section exists so you understand what's underneath. Do NOT implement manual auto-save, session locking, BindToClose handlers, or retry logic — ProfileStore handles all of this.
+> **For production games, skip to section 4 (ProfileStore).** This section exists so you understand what's underneath. Do NOT implement manual auto-save, session locking, BindToClose handlers, or retry logic - ProfileStore handles all of this.
 
 ### Core Methods
 
@@ -68,7 +68,7 @@ Key rules:
 | `UpdateAsync(key, callback)` | Atomic read-modify-write | **Preferred for saves** |
 | `RemoveAsync(key)` | Delete a key | Returns the old value |
 
-`UpdateAsync` is preferred over `SetAsync` because it is atomic — reads current value, transforms it, writes back in one operation.
+`UpdateAsync` is preferred over `SetAsync` because it is atomic - reads current value, transforms it, writes back in one operation.
 
 ### Leaderstats (Display Pattern)
 
@@ -349,7 +349,7 @@ local PROFILE_TEMPLATE = {
 
 ### Default Values for New Fields
 
-When you add new fields, existing players won't have them. **ProfileStore's `Reconcile()` handles this automatically** — it fills in any missing fields from your PROFILE_TEMPLATE. Call it after loading:
+When you add new fields, existing players won't have them. **ProfileStore's `Reconcile()` handles this automatically** - it fills in any missing fields from your PROFILE_TEMPLATE. Call it after loading:
 
 ```luau
 profile:Reconcile() -- Fills missing fields from template

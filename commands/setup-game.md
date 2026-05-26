@@ -97,12 +97,12 @@ Suggested folder layout: ~/projects/<game-name>/src/<container-name>/"
 "roblox-opencode is ready. Here's what you can do:
 
 **Commands** (type `/` to use):
-- /setup-game — re-run this setup (after plugin updates)
-- /sync-check — check if Script Sync is working properly
+- /setup-game - re-run this setup (after plugin updates)
+- /sync-check - check if Script Sync is working properly
 
 **Skills** (AI suggests when relevant):
-- roblox-code-review — review code with security/performance/monetization lenses
-- roblox-debug — iterative debug loop for Luau/Roblox issues
-- roblox-publish-checklist — pre-ship gauntlet before publishing
+- roblox-code-review - review code with security/performance/monetization lenses
+- roblox-debug - iterative debug loop for Luau/Roblox issues
+- roblox-publish-checklist - pre-ship gauntlet before publishing
 
-The harness is loaded. Prompt normally — the AI will suggest skills when relevant."
+The harness is loaded. Prompt normally - the AI will suggest skills when relevant."

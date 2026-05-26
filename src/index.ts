@@ -2,9 +2,9 @@ import type { Plugin } from "@opencode-ai/plugin"
 import { tool } from "@opencode-ai/plugin"
 import { fileURLToPath } from "node:url"
 
-// IMPORTANT: Keep in sync with package.json "version" — mismatches cause duplicate AGENTS.md blocks on upgrade
+// IMPORTANT: Keep in sync with package.json "version" - mismatches cause duplicate AGENTS.md blocks on upgrade
 const VERSION = "1.0.0"
-const MARKER_BEGIN = `<!-- roblox-opencode ${VERSION} BEGIN — managed block, edits inside will be overwritten -->`
+const MARKER_BEGIN = `<!-- roblox-opencode ${VERSION} BEGIN - managed block, edits inside will be overwritten -->`
 const MARKER_END = "<!-- roblox-opencode END -->"
 
 /**
@@ -13,7 +13,7 @@ const MARKER_END = "<!-- roblox-opencode END -->"
  * Registers roblox_setup tool for project configuration.
  */
 export const RobloxOpenCode: Plugin = async () => {
-  // Copy commands to global config (idempotent — always overwrites)
+  // Copy commands to global config (idempotent - always overwrites)
   try {
     const { existsSync, mkdirSync, readdirSync, copyFileSync } = await import("fs")
     const { join } = await import("path")
@@ -51,7 +51,7 @@ export const RobloxOpenCode: Plugin = async () => {
 }
 
 /**
- * Setup orchestrator — copies skills, vendor libs, writes config.
+ * Setup orchestrator - copies skills, vendor libs, writes config.
  * Called by the roblox_setup tool.
  */
 export async function runSetup(directory: string) {
@@ -63,7 +63,7 @@ export async function runSetup(directory: string) {
 
   const steps: { name: string; fn: () => void }[] = []
 
-  // Step 1: Copy skills (always overwrite — ensures updates propagate)
+  // Step 1: Copy skills (always overwrite - ensures updates propagate)
   steps.push({
     name: "Copy 17 skills to .opencode/skills/",
     fn: () => {
@@ -116,7 +116,7 @@ export async function runSetup(directory: string) {
       if (existsSync(luaurcPath)) {
         try { luaurc = JSON.parse(readFileSync(luaurcPath, "utf-8")) } catch { /* corrupted, start fresh */ }
       }
-      // Merge aliases — preserve user-defined ones, add/overwrite ours
+      // Merge aliases - preserve user-defined ones, add/overwrite ours
       const aliases = (luaurc.aliases as Record<string, string>) || {}
       aliases["Packages"] = ".opencode/vendor/rbxutil"
       aliases["Fusion"] = ".opencode/vendor/fusion"
@@ -162,7 +162,7 @@ export async function runSetup(directory: string) {
           block
         )
       } else {
-        // No existing block — append below existing content
+        // No existing block - append below existing content
         newContent = agentsContent ? agentsContent.trimEnd() + "\n\n" + block + "\n" : block + "\n"
       }
       writeFileSync(agentsPath, newContent)

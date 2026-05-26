@@ -13,10 +13,10 @@ last_reviewed: 2026-05-22
 > crashes, or hours of debugging in Roblox games.
 >
 > **Severity Levels:**
-> - **Critical** — Data loss, security breach, or revenue loss. Fix before shipping.
-> - **High** — Server instability, degraded experience, or exploit surface. Fix in current sprint.
-> - **Medium** — Correctness bugs, performance issues, or dev confusion. Fix before scale.
-> - **Low** — Code quality, maintainability, or minor timing issues. Fix when convenient.
+> - **Critical** - Data loss, security breach, or revenue loss. Fix before shipping.
+> - **High** - Server instability, degraded experience, or exploit surface. Fix in current sprint.
+> - **Medium** - Correctness bugs, performance issues, or dev confusion. Fix before scale.
+> - **Low** - Code quality, maintainability, or minor timing issues. Fix when convenient.
 
 ---
 
@@ -24,7 +24,7 @@ last_reviewed: 2026-05-22
 
 **See roblox-data → Session Locking and ProfileStore for full details.**
 
-When a player server-hops, the old server may still be saving while the new server loads stale data. ProfileStore handles session locking automatically — only one server owns a player's data at a time. Never use raw DataStoreService for player data without session locking.
+When a player server-hops, the old server may still be saving while the new server loads stale data. ProfileStore handles session locking automatically - only one server owns a player's data at a time. Never use raw DataStoreService for player data without session locking.
 
 ---
 
@@ -40,7 +40,7 @@ Currency and all authoritative game state must live exclusively on the server. N
 
 **See roblox-monetization → ProcessReceipt for full details.**
 
-`MarketplaceService.ProcessReceipt` must return `PurchaseGranted` ONLY after the item is granted AND saved. If you return `PurchaseGranted` before granting, the player loses Robux. If you don't return it, Roblox retries on every join — potentially granting duplicates. Grant first, save second, return third.
+`MarketplaceService.ProcessReceipt` must return `PurchaseGranted` ONLY after the item is granted AND saved. If you return `PurchaseGranted` before granting, the player loses Robux. If you don't return it, Roblox retries on every join - potentially granting duplicates. Grant first, save second, return third.
 
 ---
 
@@ -48,7 +48,7 @@ Currency and all authoritative game state must live exclusively on the server. N
 
 ### Problem
 
-Every `:Connect()` returns an `RBXScriptConnection`. If you never `:Disconnect()` it, the connection persists for the script's lifetime — even after the object is destroyed. In per-player systems, memory grows linearly with every player who has ever joined.
+Every `:Connect()` returns an `RBXScriptConnection`. If you never `:Disconnect()` it, the connection persists for the script's lifetime - even after the object is destroyed. In per-player systems, memory grows linearly with every player who has ever joined.
 
 ### Symptoms
 
@@ -123,7 +123,7 @@ end)
 
 **See roblox-data → Best Practices (BindToClose Handler) for full details.**
 
-`game:BindToClose()` gives at most 30 seconds. If using ProfileStore, this is automatic. If using raw DataStore, save all players in parallel with `task.spawn` — sequential saves with 50 players will timeout.
+`game:BindToClose()` gives at most 30 seconds. If using ProfileStore, this is automatic. If using raw DataStore, save all players in parallel with `task.spawn` - sequential saves with 50 players will timeout.
 
 ---
 
@@ -210,7 +210,7 @@ end
 
 ### Problem
 
-Luau uses Lua string patterns, not regex. `\d` doesn't work — use `%d`. Escape with `%` not `\`. No alternation (`|`), no non-greedy `*?` (use `-` instead), no lookahead.
+Luau uses Lua string patterns, not regex. `\d` doesn't work - use `%d`. Escape with `%` not `\`. No alternation (`|`), no non-greedy `*?` (use `-` instead), no lookahead.
 
 ### Key Differences
 

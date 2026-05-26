@@ -11,7 +11,7 @@
 
 <p align="center">
   An OpenCode plugin that gives AI assistants deep knowledge of Roblox development.<br/>
-  17 skills, production-ready vendor libraries, and complete UI references — so the AI writes code that actually works in Studio.
+  17 skills, production-ready vendor libraries, and complete UI references - so the AI writes code that actually works in Studio.
 </p>
 
 <br/>
@@ -92,7 +92,7 @@ Copied to your project on setup. No Wally required.
 
 | Command | What it does |
 |---------|--------------|
-| `/setup-game` | One-time project config — skills, vendor, LSP, AGENTS.md |
+| `/setup-game` | One-time project config - skills, vendor, LSP, AGENTS.md |
 | `/sync-check` | Verify Script Sync is working correctly |
 
 ## How it works
@@ -100,15 +100,15 @@ Copied to your project on setup. No Wally required.
 1. Plugin installs via npm on OpenCode startup
 2. You run `/setup-game` once per project
 3. Setup copies skills + vendor libs to `.opencode/`, writes LSP config, generates `.luaurc` aliases, injects a core block into `AGENTS.md`
-4. After that, the plugin is dormant — the skills do all the work
+4. After that, the plugin is dormant - the skills do all the work
 
 The AI loads relevant skills on-demand based on your prompt. Ask it to build a shop and it pulls in `roblox-gui-fusion`. Ask it to review security and it loads `roblox-code-review` with the networking lens.
 
 ## Prerequisites
 
-- [OpenCode](https://opencode.ai) — AI coding assistant
-- [luau-lsp](https://github.com/JohnnyMorganz/luau-lsp) — Luau diagnostics (setup checks and guides install)
-- [Roblox Studio](https://www.roblox.com/create) — with Script Sync and MCP server enabled
+- [OpenCode](https://opencode.ai) - AI coding assistant
+- [luau-lsp](https://github.com/JohnnyMorganz/luau-lsp) - Luau diagnostics (setup checks and guides install)
+- [Roblox Studio](https://www.roblox.com/create) - with Script Sync and MCP server enabled
 
 ## Update
 
@@ -116,7 +116,7 @@ Update the version in `opencode.json`, restart OpenCode, and run `/setup-game` a
 
 ## Contributors
 
-- [MrFearTick](https://github.com/MrFearTick) — Highlight reference, parent destruction patterns, networking lens, monetization expansion
+- [MrFearTick](https://github.com/MrFearTick) - Highlight reference, parent destruction patterns, networking lens, monetization expansion
 
 ## License
 

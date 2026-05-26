@@ -261,8 +261,8 @@ end)
 
 By default, `Script` runs on the server. Setting `Script.RunContext` changes this:
 
-- **`Enum.RunContext.Server`** (default) — runs on the server, only in server-valid containers
-- **`Enum.RunContext.Client`** — runs on the client, can be placed ANYWHERE (Workspace, ReplicatedStorage, etc.)
+- **`Enum.RunContext.Server`** (default) - runs on the server, only in server-valid containers
+- **`Enum.RunContext.Client`** - runs on the client, can be placed ANYWHERE (Workspace, ReplicatedStorage, etc.)
 
 `RunContext = Client` is powerful for workspace-local effects, proximity scripts, or anything the client sees but doesn't belong in StarterPlayerScripts:
 
@@ -349,7 +349,7 @@ For implementation details (RemoteEvent, RemoteFunction, UnreliableRemoteEvent, 
 **Core rules:**
 - Server is authoritative. Never trust client input.
 - Use `RemoteEvent` for fire-and-forget. Use `RemoteFunction` only when the caller needs a return value.
-- Never use `RemoteFunction:InvokeClient()` — if the client errors or disconnects, the server thread hangs forever.
+- Never use `RemoteFunction:InvokeClient()` - if the client errors or disconnects, the server thread hangs forever.
 - `UnreliableRemoteEvent` for cosmetic data only (cursor position, facing direction). Never for damage, purchases, or state.
 
 ---
@@ -843,7 +843,7 @@ For deprecated `wait()`/`spawn()`/`delay()` vs the `task` library, see **roblox-
 
 ### Instance.new with Parent Argument
 
-**Problem:** `Instance.new("Part", workspace)` passes the parent as the second argument. This causes the instance to be parented immediately during construction, which yields internally and can create race conditions — the instance replicates to clients before you've finished setting its properties.
+**Problem:** `Instance.new("Part", workspace)` passes the parent as the second argument. This causes the instance to be parented immediately during construction, which yields internally and can create race conditions - the instance replicates to clients before you've finished setting its properties.
 
 ```luau
 -- BAD: parent during construction, yields, race condition

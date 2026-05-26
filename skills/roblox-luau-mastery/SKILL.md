@@ -21,20 +21,20 @@ Load this reference when the task involves:
 - Performance optimization or idiomatic Luau style
 - Debugging common pitfalls (1-based indexing, nil in tables, deprecated APIs)
 
-Luau is Roblox's fork of Lua 5.1 with gradual typing, performance improvements, and additional built-in functions. It is NOT standard Lua 5.1 — it has its own type system, generics, `continue` keyword, compound assignment operators (`+=`, `-=`, etc.), string interpolation, and other extensions.
+Luau is Roblox's fork of Lua 5.1 with gradual typing, performance improvements, and additional built-in functions. It is NOT standard Lua 5.1 - it has its own type system, generics, `continue` keyword, compound assignment operators (`+=`, `-=`, etc.), string interpolation, and other extensions.
 
 ### Helper Modules (vendored in this harness)
 
 The harness ships vendored copies of these libraries. Use them instead of raw Roblox equivalents:
 
-- **Promise** (evaera/roblox-lua-promise) — async control flow, retry, chaining. Use instead of raw coroutines for async work.
-- **Trove** (Sleitnick/RbxUtil) — cleanup/lifecycle management. Use instead of manually tracking connections and instances.
-- **Signal** (Sleitnick/RbxUtil) — typed custom signals. Use instead of BindableEvent for module-to-module communication.
-- **Comm** (Sleitnick/RbxUtil) — typed client-server remotes. Use instead of raw RemoteEvent/RemoteFunction.
-- **Component** (Sleitnick/RbxUtil) — CollectionService tag binding with lifecycle. Use instead of manual tag listeners.
-- **ProfileStore** (loleris/MadStudioRoblox) — session-locked DataStore with retry. Use instead of raw DataStoreService.
-- **t** (osyrisrblx/t) — runtime type checking for RemoteEvent validation, function arguments, DataStore schemas. Use instead of manual typeof() chains.
-- **TestEZ** (Roblox/testez) — BDD testing framework. Use to write .spec files for your modules.
+- **Promise** (evaera/roblox-lua-promise) - async control flow, retry, chaining. Use instead of raw coroutines for async work.
+- **Trove** (Sleitnick/RbxUtil) - cleanup/lifecycle management. Use instead of manually tracking connections and instances.
+- **Signal** (Sleitnick/RbxUtil) - typed custom signals. Use instead of BindableEvent for module-to-module communication.
+- **Comm** (Sleitnick/RbxUtil) - typed client-server remotes. Use instead of raw RemoteEvent/RemoteFunction.
+- **Component** (Sleitnick/RbxUtil) - CollectionService tag binding with lifecycle. Use instead of manual tag listeners.
+- **ProfileStore** (loleris/MadStudioRoblox) - session-locked DataStore with retry. Use instead of raw DataStoreService.
+- **t** (osyrisrblx/t) - runtime type checking for RemoteEvent validation, function arguments, DataStore schemas. Use instead of manual typeof() chains.
+- **TestEZ** (Roblox/testez) - BDD testing framework. Use to write .spec files for your modules.
 
 The agent will recommend these when relevant. You can veto by saying "use my own" or having an existing equivalent in your project.
 
@@ -335,7 +335,7 @@ local player: Player = game.Players.LocalPlayer
 local character: Model = player.Character or player.CharacterAdded:Wait()
 local humanoid: Humanoid = character:FindFirstChildWhichIsA("Humanoid") :: Humanoid
 
--- Value types (these are NOT instances — they are value types / structs)
+-- Value types (these are NOT instances - they are value types / structs)
 local position: Vector3 = Vector3.new(10, 5, 0)
 local rotation: CFrame = CFrame.new(0, 10, 0) * CFrame.Angles(0, math.rad(90), 0)
 local color: Color3 = Color3.fromRGB(255, 0, 0)
@@ -498,7 +498,7 @@ export type Weapon = typeof(setmetatable(
     Weapon
 ))
 
--- Constructor uses . (static — no instance yet)
+-- Constructor uses . (static - no instance yet)
 function Weapon.new(name: string, damage: number, durability: number): Weapon
     local self = setmetatable({}, Weapon)
     self.name = name
@@ -855,7 +855,7 @@ local color = (isActive and Color3.new(0, 1, 0) or Color3.new(1, 0, 0))
 -- With function calls
 local displayName = (player.DisplayName ~= "" and player.DisplayName or player.Name)
 
--- Nested (use sparingly — readability drops fast)
+-- Nested (use sparingly - readability drops fast)
 local tier = (score >= 90 and "S" or score >= 70 and "A" or score >= 50 and "B" or "C")
 
 -- CAVEAT: if the truthy value is nil or false, the expression breaks:
@@ -906,7 +906,7 @@ end)
 local parts = { "Hello", "world", "!" }
 print(table.concat(parts, " ")) --> "Hello world !"
 
--- table.freeze / table.isfrozen (Luau extension — immutable tables)
+-- table.freeze / table.isfrozen (Luau extension - immutable tables)
 local CONFIG = table.freeze({
     MAX_PLAYERS = 50,
     ROUND_TIME = 300,
@@ -914,7 +914,7 @@ local CONFIG = table.freeze({
 })
 -- CONFIG.MAX_PLAYERS = 100 --> ERROR: attempt to modify a frozen table
 
--- table.clone (Luau extension — shallow copy)
+-- table.clone (Luau extension - shallow copy)
 local original = { 1, 2, 3, sub = { 4, 5 } }
 local copy = table.clone(original)
 copy[1] = 99
@@ -927,11 +927,11 @@ local dst = {}
 table.move(src, 2, 4, 1, dst) -- copy src[2..4] into dst starting at dst[1]
 -- dst = {20, 30, 40}
 
--- table.clear (Luau extension — remove all keys, keep table reference)
+-- table.clear (Luau extension - remove all keys, keep table reference)
 local t = { 1, 2, 3 }
 table.clear(t) -- t is now empty but same reference
 
--- Deep copy utility (not built-in — write your own)
+-- Deep copy utility (not built-in - write your own)
 local function deepCopy<T>(original: T): T
     if typeof(original) ~= "table" then
         return original
@@ -1331,7 +1331,7 @@ count += 1
 -- Setting a table value to nil REMOVES the key
 local t = { a = 1, b = 2, c = 3 }
 t.b = nil
--- t is now { a = 1, c = 3 } — "b" key no longer exists
+-- t is now { a = 1, c = 3 } - "b" key no longer exists
 
 -- This means you cannot store nil as a meaningful value in a table
 -- Use a sentinel value instead if you need to distinguish "absent" from "nil"
@@ -1342,7 +1342,7 @@ cache["key"] = NONE -- means "we checked, value is absent"
 
 -- nil in arrays causes gaps (see # operator issue above)
 local list = { 1, 2, 3 }
-list[2] = nil -- creates a gap — DO NOT DO THIS
+list[2] = nil -- creates a gap - DO NOT DO THIS
 -- Use table.remove(list, 2) instead to shift elements down
 ```
 
@@ -1437,7 +1437,7 @@ end
 print(functions[1]()) --> 1
 print(functions[5]()) --> 5
 
--- But watch out with while loops — the variable is shared
+-- But watch out with while loops - the variable is shared
 local fns = {}
 local i = 1
 while i <= 5 do
@@ -1477,7 +1477,7 @@ AI models trained on JavaScript commonly generate patterns that don't exist in L
 | `arr.pop()` | `table.remove(arr)` | Removes and returns last element |
 | `arr.splice(i, n)` | `table.remove(arr, i)` in a loop | No splice equivalent |
 | `arr.length` or `arr.length` | `#arr` | `#` operator, not a property |
-| `obj.keys(x)` | No direct equivalent — use `for k in x do` | |
+| `obj.keys(x)` | No direct equivalent - use `for k in x do` | |
 | `obj.values(x)` | `for _, v in x do` | |
 | `Object.assign(a, b)` | `for k, v in b do a[k] = v end` | No spread operator |
 | `const x = ...` | `local x = ...` | No const/let/var |
@@ -1515,5 +1515,5 @@ AI models trained on JavaScript commonly generate patterns that don't exist in L
 | `if (0)` → falsy | `if 0 then` → truthy | `0`, `""`, `{}` are all truthy in Luau |
 | `x = null` → typeof `object` | `x = nil` → type `nil` | No null/undefined split |
 | `Array.isArray(x)` | `type(x) == "table"` | No Array type distinction |
-| `x.push()` on string | N/A — strings are not indexable | No string methods, use `string.*` library |
+| `x.push()` on string | N/A - strings are not indexable | No string methods, use `string.*` library |
 

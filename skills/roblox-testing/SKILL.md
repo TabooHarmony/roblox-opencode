@@ -117,7 +117,7 @@ local results = TestEZ.TestBootstrap:run({
 
 ## 3. Unit Testing ModuleScripts
 
-Unit tests target **pure logic** — functions that take inputs and return outputs without touching engine APIs.
+Unit tests target **pure logic** - functions that take inputs and return outputs without touching engine APIs.
 
 ### Good Candidates for Unit Testing
 
@@ -403,7 +403,7 @@ return MockMarketplaceService
 
 ## 6. Integration Testing
 
-Integration tests verify that **multiple modules work together correctly** — data flows across boundaries and side effects happen as expected.
+Integration tests verify that **multiple modules work together correctly** - data flows across boundaries and side effects happen as expected.
 
 ### Pattern: DataManager + InventoryManager
 
@@ -533,7 +533,7 @@ When Roblox Studio MCP tools are available, use them for automated smoke testing
 REPEAT:
     1. Apply code fix
     2. start_playtest()
-    3. get_playtest_output() — scan for the specific error you are fixing
+    3. get_playtest_output() - scan for the specific error you are fixing
     4. If error persists → stop_playtest(), refine fix, go to 1
     5. If error gone     → stop_playtest(), move on
 ```
@@ -542,11 +542,11 @@ REPEAT:
 
 After `get_playtest_output()`, filter for critical patterns:
 
-- `"error"` or `"Error"` — runtime errors
-- `"attempt to index nil"` — missing references
-- `"Infinite yield possible"` — WaitForChild timeouts
-- `"HTTP 429"` — DataStore throttling
-- `"not a valid member"` — API misuse or renamed properties
+- `"error"` or `"Error"` - runtime errors
+- `"attempt to index nil"` - missing references
+- `"Infinite yield possible"` - WaitForChild timeouts
+- `"HTTP 429"` - DataStore throttling
+- `"not a valid member"` - API misuse or renamed properties
 
 ---
 
@@ -556,8 +556,8 @@ Automated tests do not cover everything. Use this checklist for manual playtesti
 
 ### Pre-Release Checklist
 
-- [ ] **Mobile playtest** — Touch controls work, UI fits small screens, no overlapping buttons
-- [ ] **Multi-player test** (Studio local server, 2+ players) — Replication works, no desync, RemoteEvents fire correctly
+- [ ] **Mobile playtest** - Touch controls work, UI fits small screens, no overlapping buttons
+- [ ] **Multi-player test** (Studio local server, 2+ players) - Replication works, no desync, RemoteEvents fire correctly
 - [ ] **Edge cases**:
   - Disconnect mid-save (does data persist or rollback cleanly?)
   - Rejoin immediately after leaving
@@ -568,8 +568,8 @@ Automated tests do not cover everything. Use this checklist for manual playtesti
   - Developer product purchase prompt appears
   - Receipt processing completes and grants items
   - Duplicate receipt handling (idempotent processing)
-- [ ] **First-time user experience** — New player gets default data, tutorial triggers, no errors in output
-- [ ] **Performance** — MicroProfiler shows no frame spikes on spawn, no memory leaks during extended play
+- [ ] **First-time user experience** - New player gets default data, tutorial triggers, no errors in output
+- [ ] **Performance** - MicroProfiler shows no frame spikes on spawn, no memory leaks during extended play
 
 ### Studio Test Server (Multi-Player)
 
@@ -615,14 +615,14 @@ ServerScriptService/
 
 Prioritize tests for code where bugs cost the most:
 
-1. **Data save/load** — A bug here can wipe player progress. Test serialization, deserialization, migration, and edge cases (empty data, corrupt data).
-2. **Purchases and monetization** — Receipt processing must be idempotent. Test duplicate receipts, test granting after purchase, test failure recovery.
-3. **Combat damage / core gameplay math** — Players notice immediately when damage numbers are wrong. Test crit, armor, buffs, edge values.
-4. **Server-side validation** — Every RemoteEvent handler that accepts client input must validate. Test with out-of-range values, wrong types, and nil.
+1. **Data save/load** - A bug here can wipe player progress. Test serialization, deserialization, migration, and edge cases (empty data, corrupt data).
+2. **Purchases and monetization** - Receipt processing must be idempotent. Test duplicate receipts, test granting after purchase, test failure recovery.
+3. **Combat damage / core gameplay math** - Players notice immediately when damage numbers are wrong. Test crit, armor, buffs, edge values.
+4. **Server-side validation** - Every RemoteEvent handler that accepts client input must validate. Test with out-of-range values, wrong types, and nil.
 
 ### General Guidelines
 
-- **Keep tests fast.** Each test should run in milliseconds. If a test needs `task.wait()`, you are likely testing integration-level behavior — separate it from unit tests.
+- **Keep tests fast.** Each test should run in milliseconds. If a test needs `task.wait()`, you are likely testing integration-level behavior - separate it from unit tests.
 - **One assertion focus per test.** A test named `"should add gold"` should test adding gold, not also test removing gold and checking the balance format.
 - **Test server-side validation independently.** Do not rely on the client sending correct data. Write tests that call server validation functions with malicious inputs.
 - **Write a test before fixing a bug.** Reproduce the bug in a failing test first, then fix the code until the test passes. This prevents regressions.
@@ -684,7 +684,7 @@ end
 
 **Problem:** A test sometimes passes and sometimes fails. The team marks it as "known flaky" and ignores it.
 
-**Fix:** Flaky tests usually indicate shared mutable state, timing issues, or race conditions. Fix the root cause or delete the test — a flaky test is worse than no test because it erodes trust in the suite.
+**Fix:** Flaky tests usually indicate shared mutable state, timing issues, or race conditions. Fix the root cause or delete the test - a flaky test is worse than no test because it erodes trust in the suite.
 
 ---
 

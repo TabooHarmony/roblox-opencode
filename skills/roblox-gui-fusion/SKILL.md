@@ -1,6 +1,6 @@
 ---
 name: roblox-gui-fusion
-description: Fusion 0.3 game UI — shop, inventory, settings screens. Reactive declarative patterns for Roblox.
+description: Fusion 0.3 game UI - shop, inventory, settings screens. Reactive declarative patterns for Roblox.
 last_reviewed: 2026-05-24
 ---
 
@@ -127,9 +127,9 @@ end)
 
 Full production-quality screen implementations are in `references/`:
 
-- **shop.luau** — Item grid, currency header, purchase confirmation modal, server-validated buy flow
-- **inventory.luau** — Owned items grid with rarity borders, equip/unequip, detail panel, empty slots
-- **settings-menu.luau** — Tabbed sections, sliders with drag, toggle switches, dropdown selects
+- **shop.luau** - Item grid, currency header, purchase confirmation modal, server-validated buy flow
+- **inventory.luau** - Owned items grid with rarity borders, equip/unequip, detail panel, empty slots
+- **settings-menu.luau** - Tabbed sections, sliders with drag, toggle switches, dropdown selects
 
 Each reference is self-contained and demonstrates:
 - Scope-based memory management

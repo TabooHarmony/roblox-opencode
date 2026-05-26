@@ -28,7 +28,7 @@ These require user buy-in. Recommend when the task calls for them.
 
 ## Available (use when specifically needed)
 
-Additional RbxUtil packages. Don't recommend proactively — use when the task specifically
+Additional RbxUtil packages. Don't recommend proactively - use when the task specifically
 calls for their functionality.
 
 | Library | Path | Purpose |
@@ -81,4 +81,4 @@ local ProfileStore = require(game.ServerScriptService.Packages.ProfileStore) -- 
 ```
 
 Note: Vendor source lives in `.opencode/vendor/` on disk. The require paths above
-reference where Script Sync maps them in the DataModel — not the filesystem path.
+reference where Script Sync maps them in the DataModel - not the filesystem path.

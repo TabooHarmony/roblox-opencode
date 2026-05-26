@@ -445,14 +445,14 @@ end)
 
 ## 5. Rewarded Video Ads
 
-Players opt-in to watching a short video ad in exchange for an in-game reward. Revenue per completed view. API is via `AdService` — use mcp-roblox-docs for current method signatures (API has changed during beta).
+Players opt-in to watching a short video ad in exchange for an in-game reward. Revenue per completed view. API is via `AdService` - use mcp-roblox-docs for current method signatures (API has changed during beta).
 
 ### Placement Best Practices
 
-- **Between rounds** — natural break, player is already waiting
-- **In lobby / waiting area** — low-stakes moment, nothing else to do
-- **After death (optional revive)** — high motivation, clear value proposition
-- **Daily bonus multiplier** — "Watch ad to double your daily reward"
+- **Between rounds** - natural break, player is already waiting
+- **In lobby / waiting area** - low-stakes moment, nothing else to do
+- **After death (optional revive)** - high motivation, clear value proposition
+- **Daily bonus multiplier** - "Watch ad to double your daily reward"
 
 **Avoid:** mid-gameplay interruptions, mandatory ads, ads that block progression.
 
@@ -473,7 +473,7 @@ Subscriptions provide recurring monthly revenue. Players pay a monthly Robux fee
 | Method / Event | Purpose |
 |---|---|
 | `MarketplaceService:PromptSubscriptionPurchase(player, subscriptionId)` | Show the subscription purchase prompt |
-| `MarketplaceService.PromptSubscriptionPurchaseFinished` | Fires when the subscription purchase prompt closes (does NOT confirm purchase — use UserHasSubscriptionAsync to verify) |
+| `MarketplaceService.PromptSubscriptionPurchaseFinished` | Fires when the subscription purchase prompt closes (does NOT confirm purchase - use UserHasSubscriptionAsync to verify) |
 | `MarketplaceService:GetSubscriptionProductInfoAsync(subscriptionId)` | Get subscription tier details (price, name, description) |
 | `MarketplaceService:UserHasSubscriptionAsync(userId, subscriptionId)` | Check if a player has an active subscription |
 
@@ -481,10 +481,10 @@ Subscriptions provide recurring monthly revenue. Players pay a monthly Robux fee
 
 Subscriptions are configured in the **Creator Dashboard > Monetization > Subscriptions**. Each subscription has:
 
-- **Name** — Displayed to the player
-- **Description** — What benefits they receive
-- **Price** — Monthly Robux cost (25 R$ minimum)
-- **Benefits** — Defined by your game; granted server-side
+- **Name** - Displayed to the player
+- **Description** - What benefits they receive
+- **Price** - Monthly Robux cost (25 R$ minimum)
+- **Benefits** - Defined by your game; granted server-side
 
 ### Implementation (Server Script)
 
@@ -524,7 +524,7 @@ end
 -- Use UserHasSubscriptionAsync to verify actual subscription status
 MarketplaceService.PromptSubscriptionPurchaseFinished:Connect(function(player: Player, subscriptionId: string, didTryPurchasing: boolean)
 	if not didTryPurchasing then return end
-	-- Player attempted purchase — verify it actually went through
+	-- Player attempted purchase - verify it actually went through
 	for key, sub in SUBSCRIPTIONS do
 		if sub.id == subscriptionId then
 			local success, hasSub = pcall(function()
@@ -593,7 +593,7 @@ Private servers let players pay a monthly Robux fee for a dedicated server insta
 
 ## 8. Paid Access (Entry Fee)
 
-Paid access charges a one-time fee — in Robux or local currency — for entry to your experience. Commonly used for closed betas, premium experiences, or content packs.
+Paid access charges a one-time fee - in Robux or local currency - for entry to your experience. Commonly used for closed betas, premium experiences, or content packs.
 
 ### Core API
 

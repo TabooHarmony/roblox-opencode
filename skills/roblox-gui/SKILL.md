@@ -67,7 +67,7 @@ container.Parent = screenGui
 
 - **Scale** = percentage of parent (responsive). Use for Size and Position.
 - **Offset** = fixed pixels. Use for pixel-perfect icons, small graphics, UIStroke.
-- **UIStroke** does NOT support Scale — only Offset.
+- **UIStroke** does NOT support Scale - only Offset.
 - **UICorner** DOES support Scale (`UDim.new(0.5, 0)` = 50% radius).
 - **Hybrid pattern**: start pure Scale, add Offset for minimum size, reduce Scale.
 
@@ -84,7 +84,7 @@ corner.CornerRadius = UDim.new(0.5, 0)  -- Scale (50% of smallest axis)
 ```
 
 ### Mobile-First Principles
-<!-- Source: Roblox official docs — Adaptive Design Guidelines -->
+<!-- Source: Roblox official docs - Adaptive Design Guidelines -->
 <!-- https://create.roblox.com/docs/production/publishing/adaptive-design -->
 
 - **50%+ of Roblox players are on mobile.** Design touch-first.
@@ -114,7 +114,7 @@ corner.CornerRadius = UDim.new(0.5, 0)  -- Scale (50% of smallest axis)
 | Mistake | Fix |
 |---------|-----|
 | Elements directly under ScreenGui | Use a Container Frame child |
-| Pure Scale only | Too small on mobile — add Offset minimums |
+| Pure Scale only | Too small on mobile - add Offset minimums |
 | Pure Offset only | Breaks on different resolutions |
 | Pure white on pure black text | Use off-white on dark gray |
 | Ignoring mobile players | 50%+ are mobile; design touch-first |
@@ -908,7 +908,7 @@ end)
 ### Mobile Layout Rules
 
 - Prefer vertical layouts over horizontal on mobile (scrolling down is natural)
-- Avoid sidebars — use bottom sheets or full-screen overlays instead
+- Avoid sidebars - use bottom sheets or full-screen overlays instead
 - Use `UIScale` to zoom entire UI proportionally on small screens:
 
 ```luau
@@ -1032,7 +1032,7 @@ scrollFrame.ScrollingDirection = Enum.ScrollingDirection.Y
 
 ### ScrollingFrame + UIListLayout
 
-The most common pattern — a scrollable list:
+The most common pattern - a scrollable list:
 
 ```luau
 local scrollFrame = Instance.new("ScrollingFrame")
@@ -1094,10 +1094,10 @@ Source: Roblox Scrolling Frames docs (create.roblox.com/docs/ui/scrolling-frames
 - DevForum: Designing UI - Tips and Best Practices (Roblox Staff)
 - DevForum: Design Mobile First
 - DevForum: GUI Optimization Tips
-- DevForum: epochzx — Container Frame Rule for ScreenGui
-- DevForum: uiuxartist (Roblox Staff) — Scale vs Offset guidelines
-- DevForum: PictureFolder — UI Design Tips and Best Practices (119 likes)
-- DevForum: Modern UI Colour Schemes — dark palette guidelines
+- DevForum: epochzx - Container Frame Rule for ScreenGui
+- DevForum: uiuxartist (Roblox Staff) - Scale vs Offset guidelines
+- DevForum: PictureFolder - UI Design Tips and Best Practices (119 likes)
+- DevForum: Modern UI Colour Schemes - dark palette guidelines
 - Fusion: github.com/dphfox/Fusion (MIT)
 - Vide: github.com/centau/vide (MIT)
-- brockmartin/roblox-game-skill (MIT) — base content
+- brockmartin/roblox-game-skill (MIT) - base content

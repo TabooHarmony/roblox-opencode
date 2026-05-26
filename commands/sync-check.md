@@ -1,5 +1,5 @@
 ---
-description: "Sync sanity check — diagnose when files aren't appearing in Studio"
+description: "Sync sanity check - diagnose when files aren't appearing in Studio"
 agent: build
 ---
 

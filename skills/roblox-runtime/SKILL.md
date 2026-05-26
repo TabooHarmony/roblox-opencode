@@ -78,23 +78,23 @@ Key rules:
 
 StreamingEnabled is **on by default** for new places. Only `BaseParts` and their descendants stream in/out. Other instances (Folders, ValueObjects, RemoteEvents, ModuleScripts) load during initial client load and never stream.
 
-When instances stream out, they are **parented to nil** — not destroyed. Luau state persists if they stream back in. Removal signals fire, but local-only property changes may be lost.
+When instances stream out, they are **parented to nil** - not destroyed. Luau state persists if they stream back in. Removal signals fire, but local-only property changes may be lost.
 
 #### Configuration
 
-- `StreamingTargetRadius` — radius (studs) engine keeps loaded. Start at 256, tune.
-- `StreamingMinRadius` — guaranteed radius. Set ~64 for nearby content.
-- `StreamingPauseMode` — what happens during load (Default, Disabled, ClientPhysicsPause).
-- `ModelStreamingMode` — per-model: `Atomic` (all descendants load together), `Persistent` (never streams out), `PersistentPerPlayer`, `Nonatomic`.
+- `StreamingTargetRadius` - radius (studs) engine keeps loaded. Start at 256, tune.
+- `StreamingMinRadius` - guaranteed radius. Set ~64 for nearby content.
+- `StreamingPauseMode` - what happens during load (Default, Disabled, ClientPhysicsPause).
+- `ModelStreamingMode` - per-model: `Atomic` (all descendants load together), `Persistent` (never streams out), `PersistentPerPlayer`, `Nonatomic`.
 
 #### Critical Rules for AI-Generated Code
 
-1. **Always use `WaitForChild()` on client** for any Workspace instance. Never use `workspace.MyPart` dot access in LocalScripts — the instance may not be loaded yet.
+1. **Always use `WaitForChild()` on client** for any Workspace instance. Never use `workspace.MyPart` dot access in LocalScripts - the instance may not be loaded yet.
 2. **Always include a timeout**: `WaitForChild("Name", 30)`. Without timeout, thread hangs forever if instance never streams in.
 3. **Never use `math.huge` as timeout.** The instance may never stream in.
 4. **Server has everything immediately.** WaitForChild is only needed on the client for Workspace instances.
 5. **ReplicatedStorage/ReplicatedFirst never stream.** Always available on client.
-6. **Handle nil returns from FindFirstChild** — instance may be streamed out.
+6. **Handle nil returns from FindFirstChild** - instance may be streamed out.
 7. **When instance streams out, Parent becomes nil.** Clean up connections on Parent change.
 8. **BasePart descendants stream independently.** Only non-BasePart children are guaranteed to stream with parent.
 9. **Use `ModelStreamingMode = Atomic`** when all parts must appear together.
@@ -512,12 +512,12 @@ The MicroProfiler displays a real-time flame graph of what the engine is doing e
 
 1. Press `Ctrl+F6` to open. Press `Ctrl+P` to pause and inspect a frame.
 2. Each horizontal bar is a task. Width represents time spent.
-3. Look for bars that are unusually wide — these are your hot frames.
+3. Look for bars that are unusually wide - these are your hot frames.
 4. Common labels to watch:
-   - `Heartbeat` — your Heartbeat scripts. If wide, your per-frame logic is too heavy.
-   - `Physics` — collision and simulation. Reduce unanchored parts.
-   - `Render/Perform` — GPU-bound. Reduce draw calls, textures, particles.
-   - `Replication` — network overhead. Reduce remote calls and replicated property changes.
+   - `Heartbeat` - your Heartbeat scripts. If wide, your per-frame logic is too heavy.
+   - `Physics` - collision and simulation. Reduce unanchored parts.
+   - `Render/Perform` - GPU-bound. Reduce draw calls, textures, particles.
+   - `Replication` - network overhead. Reduce remote calls and replicated property changes.
 5. Click a bar to see details: script name, line number, time in microseconds.
 6. Use the `microprofiler` dump (`Ctrl+F6` > `Dump`) to save a `.html` file for offline analysis.
 

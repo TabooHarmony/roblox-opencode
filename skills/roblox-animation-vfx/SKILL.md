@@ -459,7 +459,7 @@ trail.Parent = part
 
 When a `Part` or `Model` containing effects is destroyed (`:Destroy()`, player leave, workspace clear), all child `ParticleEmitter`, `Trail`, `Beam`, and `Attachment` are destroyed instantly. Active particles vanish mid-flight, trails cut off, beams disappear.
 
-**Solution — Debris + temporary holder:** If you need an effect to finish gracefully after its parent is gone, reparent it to a temporary part and let `Debris` clean up.
+**Solution - Debris + temporary holder:** If you need an effect to finish gracefully after its parent is gone, reparent it to a temporary part and let `Debris` clean up.
 
 ```luau
 local Debris = game:GetService("Debris")
@@ -483,7 +483,7 @@ local function destroyWithGrace(effect: Instance, parent: Instance, gracePeriod:
     Debris:AddItem(holder, gracePeriod)
 end
 
--- Example: Trail with 1s lifetime — give it 1.1s to fade out cleanly
+-- Example: Trail with 1s lifetime - give it 1.1s to fade out cleanly
 local trail = -- ... setup trail on a sword part ...
 destroyWithGrace(trail, swordPart, 1.1)
 ```
@@ -511,7 +511,7 @@ highlight.Parent = targetPart
 
 | Property | Type | Default | Description |
 |----------|------|---------|-------------|
-| `Adornee` | Instance | — | The `BasePart` or `Model` to highlight |
+| `Adornee` | Instance | - | The `BasePart` or `Model` to highlight |
 | `DepthMode` | Enum.HighlightDepthMode | `AlwaysOnTop` | `AlwaysOnTop` = visible through objects, `Occluded` = hidden by obstructions |
 | `Enabled` | boolean | `true` | Toggle visibility |
 | `FillColor` | Color3 | `[255, 200, 50]` | Interior overlay color |
@@ -519,7 +519,7 @@ highlight.Parent = targetPart
 | `OutlineColor` | Color3 | `[255, 255, 255]` | Edge outline color |
 | `OutlineTransparency` | number | `0` | 0 = opaque, 1 = invisible |
 
-### Common Pattern — Team Highlight
+### Common Pattern - Team Highlight
 
 ```luau
 local function addTeamHighlight(character: Model, teamColor: Color3)
@@ -536,7 +536,7 @@ end
 ### Limitations
 
 - **Max 255 simultaneous** Highlight instances per client. Excess instances are silently ignored.
-- Disabled highlights still count toward the 255 limit — `:Destroy()` instead of `Enabled = false` if permanently unused.
+- Disabled highlights still count toward the 255 limit - `:Destroy()` instead of `Enabled = false` if permanently unused.
 - The `Highlight` itself is **not** destroyed when its `Adornee` is destroyed. Clean up manually.
 
 ### Cleanup on Adornee Destroyed
