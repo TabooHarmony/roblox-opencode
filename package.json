@@ -34,8 +34,5 @@
     "commands/",
     "vendor/",
     "core/"
-  ],
-  "devDependencies": {
-    "esbuild": "^0.28.0"
-  }
+  ]
 }
