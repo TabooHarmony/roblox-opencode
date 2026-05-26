@@ -23,7 +23,7 @@
   },
   "scripts": {
     "build": "esbuild src/index.ts --bundle --outfile=dist/server.js --target=esnext --format=esm --platform=node --external:@opencode-ai/plugin",
-    "prepare": "true"
+    "prepare": "node -e \"\""
   },
   "files": [
     "dist/",
