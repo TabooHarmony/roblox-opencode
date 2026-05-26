@@ -3,7 +3,7 @@ import { tool } from "@opencode-ai/plugin"
 import { fileURLToPath } from "node:url"
 
 // IMPORTANT: Keep in sync with package.json "version" - mismatches cause duplicate AGENTS.md blocks on upgrade
-const VERSION = "1.0.2"
+const VERSION = "1.0.3"
 const MARKER_BEGIN = `<!-- roblox-opencode ${VERSION} BEGIN - managed block, edits inside will be overwritten -->`
 const MARKER_END = "<!-- roblox-opencode END -->"
 
@@ -59,7 +59,7 @@ export const RobloxOpenCode: Plugin = async (ctx) => {
   return {
     tool: {
       roblox_setup: tool({
-        description: "One-time project setup for roblox-opencode. Copies 17 skills and vendor libraries (rbxutil, profilestore, promise, testez, t, fusion) to the project, writes luau-lsp config to opencode.json, and writes the core Roblox agent instructions to AGENTS.md. Run this when first opening a Roblox project.",
+        description: "One-time project setup for roblox-opencode. Copies 17 skills and vendor libraries (rbxutil, profilestore, promise, testez, t, fusion) to the project, writes luau-lsp config and mcp-roblox-docs (if uvx is available) to opencode.json, and writes the core Roblox agent instructions to AGENTS.md. Run this when first opening a Roblox project.",
         args: {},
         async execute(_args, context) {
           if (!context.directory) {
@@ -84,6 +84,14 @@ export async function runSetup(directory: string) {
   const projectDir = directory
 
   const steps: { name: string; fn: () => void }[] = []
+
+  // Detect uvx once upfront
+  let uvxFound = false
+  try {
+    const { execSync } = await import("child_process")
+    execSync("command -v uvx", { stdio: "ignore" })
+    uvxFound = true
+  } catch { /* uvx not installed */ }
 
   // Step 1: Copy skills (always overwrite - ensures updates propagate)
   steps.push({
@@ -125,6 +133,18 @@ export async function runSetup(directory: string) {
           extensions: [".luau"],
         },
       }
+
+      // Register mcp-roblox-docs if uvx is available
+      if (uvxFound) {
+        const mcp = (config.mcp as Record<string, unknown>) || {}
+        mcp["roblox-docs"] = {
+          type: "local",
+          command: ["uvx", "mcp-roblox-docs"],
+          enabled: true,
+        }
+        config.mcp = mcp
+      }
+
       writeFileSync(configPath, JSON.stringify(config, null, 2) + "\n")
     },
   })

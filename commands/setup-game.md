@@ -16,7 +16,7 @@ Commands (`/setup-game`, `/sync-check`) are already available globally. Skills (
 Call the `roblox_setup` tool. It handles:
 - Copying 17 skills to `.opencode/skills/`
 - Copying vendor libraries (rbxutil, profilestore, promise, testez, t, fusion) to `.opencode/vendor/`
-- Writing luau-lsp config to `opencode.json`
+- Writing luau-lsp config and mcp-roblox-docs (if `uvx` is available) to `opencode.json`
 - Writing the core Roblox agent instructions to `AGENTS.md`
 
 Report the results to the user. If any step failed, explain what went wrong and how to fix it.
