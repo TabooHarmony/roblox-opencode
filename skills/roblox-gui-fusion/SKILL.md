@@ -12,6 +12,11 @@ last_reviewed: 2026-05-24
 
 **Framework:** Fusion 0.3 (dphfox/Fusion, MIT). Vendored at `.opencode/vendor/fusion/`.
 
+**Require path:** The AI must resolve the Fusion require path based on the project:
+- If `Packages/Fusion` exists (Wally) → `require(ReplicatedStorage.Packages.Fusion)`
+- If `.opencode/vendor/fusion` exists (this plugin) → `require(ReplicatedStorage[".opencode"].vendor.fusion)` or wherever the project root maps in the DataModel
+- If Fusion is elsewhere → match the existing require pattern in the project
+
 **When to use this skill:**
 - Building new game UI screens from scratch (shop, inventory, settings, etc.)
 - Any UI with dynamic state (item lists, toggles, selections, animations)
