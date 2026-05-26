@@ -1,7 +1,7 @@
 // src/index.ts
 import { tool } from "@opencode-ai/plugin";
 import { fileURLToPath } from "node:url";
-var VERSION = "1.0.3";
+var VERSION = "1.0.4";
 var MARKER_BEGIN = `<!-- roblox-opencode ${VERSION} BEGIN - managed block, edits inside will be overwritten -->`;
 var MARKER_END = "<!-- roblox-opencode END -->";
 var RobloxOpenCode = async (ctx) => {
@@ -40,7 +40,7 @@ var RobloxOpenCode = async (ctx) => {
   return {
     tool: {
       roblox_setup: tool({
-        description: "One-time project setup for roblox-opencode. Copies 17 skills and vendor libraries (rbxutil, profilestore, promise, testez, t, fusion) to the project, writes luau-lsp config and mcp-roblox-docs (if uvx is available) to opencode.json, and writes the core Roblox agent instructions to AGENTS.md. Run this when first opening a Roblox project.",
+        description: "One-time project setup for roblox-opencode. Copies 17 skills and vendor libraries (rbxutil, profilestore, promise, testez, t, fusion) to the project, writes luau-lsp config and MCP servers (roblox-docs + web search via DuckDuckGo, if uvx is available) to opencode.json, and writes the core Roblox agent instructions to AGENTS.md. Run this when first opening a Roblox project.",
         args: {},
         async execute(_args, context) {
           if (!context.directory) {
@@ -108,6 +108,11 @@ async function runSetup(directory) {
         mcp["roblox-docs"] = {
           type: "local",
           command: ["uvx", "mcp-roblox-docs"],
+          enabled: true
+        };
+        mcp["web-search"] = {
+          type: "local",
+          command: ["uvx", "duckduckgo-mcp-server"],
           enabled: true
         };
         config.mcp = mcp;

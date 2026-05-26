@@ -43,23 +43,23 @@ Loaded on-demand based on what you're working on. The AI picks the right ones au
 
 | Domain | Skill | Covers |
 |--------|-------|--------|
-| Language | `roblox-luau-mastery` | Syntax, idioms, type system, strict mode |
-| UI | `roblox-gui` | Layout fundamentals, mobile-first, responsive patterns |
-| UI | `roblox-gui-fusion` | Fusion 0.3 reactive UI with full screen references |
-| VFX | `roblox-animation-vfx` | Tweens, particles, trails, highlights, camera shake |
-| Networking | `roblox-networking` | Security hardening, validation, rate limiting |
-| Data | `roblox-data` | ProfileStore, schema design, migrations, BindToClose |
-| Testing | `roblox-testing` | TestEZ, BDD patterns, test strategy |
-| Tooling | `roblox-tooling` | Studio MCP, luau-lsp, diagnostics |
-| Architecture | `roblox-architecture` | Service hierarchy, 7 foundational patterns |
-| Runtime | `roblox-runtime` | RunService, StreamingEnabled, memory |
-| Gotchas | `roblox-sharp-edges` | 13 production footguns by severity |
-| Money | `roblox-monetization` | GamePasses, DevProducts, subscriptions, TOS |
-| Sync | `roblox-sync` | Script Sync setup and troubleshooting |
-| Analytics | `roblox-analytics` | Events, economy tracking, funnels |
-| Review | `roblox-code-review` | Security, performance, networking, data lenses |
-| Debug | `roblox-debug` | Iterative debug loop for Luau issues |
-| Ship | `roblox-publish-checklist` | Pre-ship verification gauntlet |
+| **Language** | `roblox-luau-mastery` | Syntax, idioms, type system, strict mode |
+| **UI** | `roblox-gui` | Layout fundamentals, mobile-first, responsive patterns |
+| **UI** | `roblox-gui-fusion` | Fusion 0.3 reactive UI with full screen references |
+| **VFX** | `roblox-animation-vfx` | Tweens, particles, trails, highlights, camera shake |
+| **Networking** | `roblox-networking` | Security hardening, validation, rate limiting |
+| **Data** | `roblox-data` | ProfileStore, schema design, migrations, BindToClose |
+| **Testing** | `roblox-testing` | TestEZ, BDD patterns, test strategy |
+| **Tooling** | `roblox-tooling` | Studio MCP, luau-lsp, diagnostics |
+| **Architecture** | `roblox-architecture` | Service hierarchy, 7 foundational patterns |
+| **Runtime** | `roblox-runtime` | RunService, StreamingEnabled, memory |
+| **Gotchas** | `roblox-sharp-edges` | 13 production footguns by severity |
+| **Money** | `roblox-monetization` | GamePasses, DevProducts, subscriptions, TOS |
+| **Sync** | `roblox-sync` | Script Sync setup and troubleshooting |
+| **Analytics** | `roblox-analytics` | Events, economy tracking, funnels |
+| **Review** | `roblox-code-review` | Security, performance, networking, data lenses |
+| **Debug** | `roblox-debug` | Iterative debug loop for Luau issues |
+| **Ship** | `roblox-publish-checklist` | Pre-ship verification gauntlet |
 
 ## Vendor libraries
 
@@ -76,7 +76,7 @@ Copied to your project on setup. No Wally required.
 | **Component** | CollectionService tag binding |
 | **t** | Runtime type checking |
 | **TestEZ** | BDD testing framework |
-| + RbxUtil | 25 additional utility packages available on demand |
+| **RbxUtil** | 25 additional utility packages available on demand |
 
 ## Commands
 
@@ -89,7 +89,7 @@ Copied to your project on setup. No Wally required.
 
 1. Plugin installs via npm on OpenCode startup
 2. You run `/setup-game` once per project
-3. Setup copies skills + vendor libs to `.opencode/`, writes LSP config, generates `.luaurc` aliases, injects a core block into `AGENTS.md`
+3. Setup copies skills + vendor libs to `.opencode/`, writes LSP config, registers MCP servers (Roblox API docs + DuckDuckGo web search), generates `.luaurc` aliases, injects a core block into `AGENTS.md`
 4. After that, the plugin is dormant. The skills do all the work.
 
 The AI loads relevant skills on-demand based on your prompt. Ask it to build a shop and it pulls in `roblox-gui-fusion`. Ask it to review security and it loads `roblox-code-review` with the networking lens.
