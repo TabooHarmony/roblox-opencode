@@ -1,7 +1,7 @@
 // src/index.ts
 import { tool } from "@opencode-ai/plugin";
 import { fileURLToPath } from "node:url";
-var VERSION = "1.0.0";
+var VERSION = "1.0.1";
 var MARKER_BEGIN = `<!-- roblox-opencode ${VERSION} BEGIN - managed block, edits inside will be overwritten -->`;
 var MARKER_END = "<!-- roblox-opencode END -->";
 var RobloxOpenCode = async (ctx) => {
