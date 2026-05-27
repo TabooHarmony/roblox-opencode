@@ -89,8 +89,9 @@ Copied to your project on setup. No Wally required.
 
 1. Plugin installs via npm on OpenCode startup
 2. You run `/setup-game` once per project
-3. Setup copies skills + vendor libs to `.opencode/`, writes LSP config, registers MCP servers (Roblox API docs + DuckDuckGo web search), generates `.luaurc` aliases, injects a core block into `AGENTS.md`
-4. After that, the plugin is dormant. The skills do all the work.
+3. Setup copies skills + vendor libs to `.opencode/`, writes LSP config, generates `.luaurc` aliases, and injects a core block into `AGENTS.md`
+4. Setup also detects your environment and recommends MCP servers (Roblox API docs, web search, code analysis). You pick which ones to install — no forced dependencies.
+5. After that, the plugin is dormant. The skills do all the work.
 
 The AI loads relevant skills on-demand based on your prompt. Ask it to build a shop and it pulls in `roblox-gui-fusion`. Ask it to review security and it loads `roblox-code-review` with the networking lens.
 

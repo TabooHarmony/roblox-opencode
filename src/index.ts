@@ -3,9 +3,28 @@ import { tool } from "@opencode-ai/plugin"
 import { fileURLToPath } from "node:url"
 
 // IMPORTANT: Keep in sync with package.json "version" - mismatches cause duplicate AGENTS.md blocks on upgrade
-const VERSION = "1.0.4"
+const VERSION = "1.0.5"
 const MARKER_BEGIN = `<!-- roblox-opencode ${VERSION} BEGIN - managed block, edits inside will be overwritten -->`
 const MARKER_END = "<!-- roblox-opencode END -->"
+
+/** Recommended MCP servers for Roblox development. Each entry describes what it does and how to run it. */
+const RECOMMENDED_MCPS: Record<string, { description: string; command: string[]; recommended: boolean }> = {
+  "roblox-docs": {
+    description: "Roblox API reference — queries class docs at runtime so the assistant doesn't guess at stale properties",
+    command: ["uvx", "mcp-roblox-docs"],
+    recommended: true,
+  },
+  "web-search": {
+    description: "DuckDuckGo web search + content fetch — find GUI assets, color palettes, DevForum solutions, code patterns",
+    command: ["uvx", "duckduckgo-mcp-server"],
+    recommended: true,
+  },
+  "code-analysis": {
+    description: "Tree-sitter code analysis — dependency graphs, file exploration, symbol search. Gives the assistant structural understanding of your project",
+    command: ["uvx", "mcp-server-tree-sitter"],
+    recommended: false,
+  },
+}
 
 /**
  * Plugin entry point.
@@ -47,7 +66,16 @@ export const RobloxOpenCode: Plugin = async (ctx) => {
       }
       if (installedVersion !== VERSION && existsSync(join(directory, ".opencode", "skills"))) {
         // Only auto-sync if setup was run before (skills dir exists)
-        await runSetup(directory)
+        // Preserve existing MCPs from opencode.json during auto-sync
+        let existingMcpNames: string[] = []
+        try {
+          const configPath = join(directory, "opencode.json")
+          if (existsSync(configPath)) {
+            const config = JSON.parse(readFileSync(configPath, "utf-8"))
+            existingMcpNames = Object.keys(config.mcp || {})
+          }
+        } catch { /* ignore */ }
+        await runSetup(directory, existingMcpNames)
         mkdirSync(join(directory, ".opencode"), { recursive: true })
         writeFileSync(versionFile, VERSION + "\n")
       }
@@ -59,13 +87,19 @@ export const RobloxOpenCode: Plugin = async (ctx) => {
   return {
     tool: {
       roblox_setup: tool({
-        description: "One-time project setup for roblox-opencode. Copies 17 skills and vendor libraries (rbxutil, profilestore, promise, testez, t, fusion) to the project, writes luau-lsp config and MCP servers (roblox-docs + web search via DuckDuckGo, if uvx is available) to opencode.json, and writes the core Roblox agent instructions to AGENTS.md. Run this when first opening a Roblox project.",
-        args: {},
-        async execute(_args, context) {
+        description: `One-time project setup for roblox-opencode. Copies skills and vendor libraries to the project, writes luau-lsp config, and writes core Roblox agent instructions to AGENTS.md. Run this when first opening a Roblox project.
+
+When called WITHOUT mcpServers: detects environment (uvx availability, existing MCPs) and returns recommended MCP servers. Present these to the user and ask which they want installed. Then call again WITH their selection.
+
+When called WITH mcpServers: runs full setup with the selected MCP servers. Pass an array of MCP names (e.g. ["roblox-docs", "web-search"]) or an empty array to skip MCP installation.`,
+        args: {
+          mcpServers: tool.schema.array(tool.schema.string()).optional().describe("Array of MCP server names to install. Omit to detect environment and return recommendations. Pass [] to skip MCP installation entirely."),
+        },
+        async execute(args, context) {
           if (!context.directory) {
             return [{ step: "pre-check", status: "error", error: "No project directory. Open a project folder first." }]
           }
-          return await runSetup(context.directory)
+          return await runSetup(context.directory, args.mcpServers as string[] | undefined)
         },
       }),
     },
@@ -76,14 +110,12 @@ export const RobloxOpenCode: Plugin = async (ctx) => {
  * Setup orchestrator - copies skills, vendor libs, writes config.
  * Called by the roblox_setup tool.
  */
-export async function runSetup(directory: string) {
+export async function runSetup(directory: string, mcpServers?: string[]) {
   const { existsSync, mkdirSync, readFileSync, writeFileSync, cpSync } = await import("fs")
   const { join } = await import("path")
 
   const pkgDir = join(import.meta.dirname ?? fileURLToPath(new URL(".", import.meta.url)), "..")
   const projectDir = directory
-
-  const steps: { name: string; fn: () => void }[] = []
 
   // Detect uvx once upfront
   let uvxFound = false
@@ -92,6 +124,41 @@ export async function runSetup(directory: string) {
     execSync("command -v uvx", { stdio: "ignore" })
     uvxFound = true
   } catch { /* uvx not installed */ }
+
+  // Detect existing MCPs in opencode.json
+  const configPath = join(projectDir, "opencode.json")
+  let existingMcps: string[] = []
+  if (existsSync(configPath)) {
+    try {
+      const config = JSON.parse(readFileSync(configPath, "utf-8"))
+      existingMcps = Object.keys(config.mcp || {})
+    } catch { /* corrupted, ignore */ }
+  }
+
+  // Phase 1: No mcpServers provided — detect and return recommendations
+  if (mcpServers === undefined) {
+    const recommendations = Object.entries(RECOMMENDED_MCPS).map(([name, mcp]) => ({
+      name,
+      description: mcp.description,
+      recommended: mcp.recommended,
+      alreadyInstalled: existingMcps.includes(name),
+    }))
+
+    return {
+      phase: "detect" as const,
+      uvxAvailable: uvxFound,
+      existingMcps,
+      recommendations: uvxFound
+        ? recommendations
+        : recommendations.map(r => ({ ...r, available: false, reason: "uvx not found" })),
+      message: uvxFound
+        ? "MCP servers require uvx (detected). Review the recommendations and call roblox_setup again with your selection."
+        : "uvx not found — MCP servers require uvx (pip install uvx). You can still run setup without MCPs by passing mcpServers: [].",
+    }
+  }
+
+  // Phase 2: Run setup with selected MCPs
+  const steps: { name: string; fn: () => void }[] = []
 
   // Step 1: Copy skills (always overwrite - ensures updates propagate)
   steps.push({
@@ -117,11 +184,10 @@ export async function runSetup(directory: string) {
     },
   })
 
-  // Step 3: Write LSP config to opencode.json
+  // Step 3: Write LSP config + selected MCPs to opencode.json
   steps.push({
-    name: "Write LSP config (luau-lsp)",
+    name: "Write LSP config (luau-lsp) + MCP servers",
     fn: () => {
-      const configPath = join(projectDir, "opencode.json")
       let config: Record<string, unknown> = {}
       if (existsSync(configPath)) {
         try { config = JSON.parse(readFileSync(configPath, "utf-8")) } catch { /* corrupted, start fresh */ }
@@ -134,18 +200,18 @@ export async function runSetup(directory: string) {
         },
       }
 
-      // Register MCP servers if uvx is available
-      if (uvxFound) {
+      // Write selected MCP servers
+      if (mcpServers.length > 0 && uvxFound) {
         const mcp = (config.mcp as Record<string, unknown>) || {}
-        mcp["roblox-docs"] = {
-          type: "local",
-          command: ["uvx", "mcp-roblox-docs"],
-          enabled: true,
-        }
-        mcp["web-search"] = {
-          type: "local",
-          command: ["uvx", "duckduckgo-mcp-server"],
-          enabled: true,
+        for (const name of mcpServers) {
+          const def = RECOMMENDED_MCPS[name]
+          if (def) {
+            mcp[name] = {
+              type: "local",
+              command: def.command,
+              enabled: true,
+            }
+          }
         }
         config.mcp = mcp
       }

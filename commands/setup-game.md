@@ -13,11 +13,22 @@ Commands (`/setup-game`, `/sync-check`) are already available globally. Skills (
 
 ## Step 1: Run the setup tool
 
-Call the `roblox_setup` tool. It handles:
+Call the `roblox_setup` tool WITHOUT the `mcpServers` argument first. This triggers environment detection and returns recommended MCP servers.
+
+The tool handles:
 - Copying 17 skills to `.opencode/skills/`
 - Copying vendor libraries (rbxutil, profilestore, promise, testez, t, fusion) to `.opencode/vendor/`
-- Writing luau-lsp config and mcp-roblox-docs (if `uvx` is available) to `opencode.json`
+- Writing luau-lsp config to `opencode.json`
 - Writing the core Roblox agent instructions to `AGENTS.md`
+
+It also detects `uvx` availability and existing MCPs, then returns a list of recommended MCP servers:
+- **roblox-docs** — Roblox API reference at runtime (recommended)
+- **web-search** — DuckDuckGo search + content fetch (recommended)
+- **code-analysis** — Tree-sitter dependency graphs + file exploration (optional)
+
+Present these to the user: "Which MCP servers would you like to install? The first two are recommended. Code-analysis adds dependency graph understanding but uses more context."
+
+Once the user responds, call `roblox_setup` again WITH their selection (e.g. `mcpServers: ["roblox-docs", "web-search"]`). Pass `mcpServers: []` to skip MCP installation entirely.
 
 Report the results to the user. If any step failed, explain what went wrong and how to fix it.
 
