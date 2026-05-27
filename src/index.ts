@@ -55,6 +55,24 @@ export const RobloxOpenCode: Plugin = async (ctx) => {
     // non-fatal
   }
 
+  // Also copy commands to project-level .opencode/commands/ (reliable on Windows)
+  try {
+    const directory = ctx?.directory
+    if (directory) {
+      const srcDir = join(pkgDir, "commands")
+      const destDir = join(directory, ".opencode", "commands")
+      if (existsSync(srcDir)) {
+        mkdirSync(destDir, { recursive: true })
+        const files = readdirSync(srcDir).filter(f => f.endsWith(".md"))
+        for (const file of files) {
+          copyFileSync(join(srcDir, file), join(destDir, file))
+        }
+      }
+    }
+  } catch {
+    // non-fatal
+  }
+
   // Auto-sync skills if version changed (silent upgrade on plugin load)
   try {
     const directory = ctx?.directory
@@ -111,7 +129,7 @@ When called WITH mcpServers: runs full setup with the selected MCP servers. Pass
  * Called by the roblox_setup tool.
  */
 export async function runSetup(directory: string, mcpServers?: string[]) {
-  const { existsSync, mkdirSync, readFileSync, writeFileSync, cpSync } = await import("fs")
+  const { existsSync, mkdirSync, readFileSync, writeFileSync, cpSync, readdirSync, copyFileSync } = await import("fs")
   const { join } = await import("path")
 
   const pkgDir = join(import.meta.dirname ?? fileURLToPath(new URL(".", import.meta.url)), "..")
@@ -159,6 +177,21 @@ export async function runSetup(directory: string, mcpServers?: string[]) {
 
   // Phase 2: Run setup with selected MCPs
   const steps: { name: string; fn: () => void }[] = []
+
+  // Step 0: Copy commands to project-level .opencode/commands/ (cross-platform reliable)
+  steps.push({
+    name: "Copy commands to .opencode/commands/",
+    fn: () => {
+      const src = join(pkgDir, "commands")
+      const dest = join(projectDir, ".opencode", "commands")
+      if (!existsSync(src)) return // non-fatal if commands dir missing
+      mkdirSync(dest, { recursive: true })
+      const files = readdirSync(src).filter((f: string) => f.endsWith(".md"))
+      for (const file of files) {
+        copyFileSync(join(src, file), join(dest, file))
+      }
+    },
+  })
 
   // Step 1: Copy skills (always overwrite - ensures updates propagate)
   steps.push({

@@ -41,6 +41,21 @@ var RobloxOpenCode = async (ctx) => {
   try {
     const directory = ctx?.directory;
     if (directory) {
+      const srcDir = join(pkgDir, "commands");
+      const destDir = join(directory, ".opencode", "commands");
+      if (existsSync(srcDir)) {
+        mkdirSync(destDir, { recursive: true });
+        const files = readdirSync(srcDir).filter((f) => f.endsWith(".md"));
+        for (const file of files) {
+          copyFileSync(join(srcDir, file), join(destDir, file));
+        }
+      }
+    }
+  } catch {
+  }
+  try {
+    const directory = ctx?.directory;
+    if (directory) {
       const versionFile = join(directory, ".opencode", ".roblox-opencode-version");
       let installedVersion = "";
       if (existsSync(versionFile)) {
@@ -85,7 +100,7 @@ When called WITH mcpServers: runs full setup with the selected MCP servers. Pass
   };
 };
 async function runSetup(directory, mcpServers) {
-  const { existsSync, mkdirSync, readFileSync, writeFileSync, cpSync } = await import("fs");
+  const { existsSync, mkdirSync, readFileSync, writeFileSync, cpSync, readdirSync, copyFileSync } = await import("fs");
   const { join } = await import("path");
   const pkgDir = join(import.meta.dirname ?? fileURLToPath(new URL(".", import.meta.url)), "..");
   const projectDir = directory;
@@ -121,6 +136,19 @@ async function runSetup(directory, mcpServers) {
     };
   }
   const steps = [];
+  steps.push({
+    name: "Copy commands to .opencode/commands/",
+    fn: () => {
+      const src = join(pkgDir, "commands");
+      const dest = join(projectDir, ".opencode", "commands");
+      if (!existsSync(src)) return;
+      mkdirSync(dest, { recursive: true });
+      const files = readdirSync(src).filter((f) => f.endsWith(".md"));
+      for (const file of files) {
+        copyFileSync(join(src, file), join(dest, file));
+      }
+    }
+  });
   steps.push({
     name: "Copy 17 skills to .opencode/skills/",
     fn: () => {
