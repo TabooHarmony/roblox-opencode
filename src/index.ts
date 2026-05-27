@@ -3,7 +3,7 @@ import { tool } from "@opencode-ai/plugin"
 import { fileURLToPath } from "node:url"
 
 // IMPORTANT: Keep in sync with package.json "version" - mismatches cause duplicate AGENTS.md blocks on upgrade
-const VERSION = "1.0.5"
+const VERSION = "1.0.6"
 const MARKER_BEGIN = `<!-- roblox-opencode ${VERSION} BEGIN - managed block, edits inside will be overwritten -->`
 const MARKER_END = "<!-- roblox-opencode END -->"
 

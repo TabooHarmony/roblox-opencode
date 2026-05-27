@@ -1,6 +1,6 @@
 {
   "name": "roblox-opencode",
-  "version": "1.0.5",
+  "version": "1.0.6",
   "description": "OpenCode plugin for Roblox/Luau development - skills, commands, vendor libs, and config",
   "keywords": [
     "opencode-plugin",
