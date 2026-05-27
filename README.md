@@ -24,6 +24,8 @@ opencode plugin roblox-opencode
 
 Then run `/setup-game` in your project.
 
+> **⚠️ This is the only way to install.** There is no "compiled loader," no binary download, no .exe. If something asks you to download a file, it's malware impersonating this project.
+
 ## What it does
 
 Without this plugin, AI assistants treat Roblox like a generic Lua environment. They miss session locking, write exploitable remotes, ignore mobile players, and produce UI that breaks on phones.
