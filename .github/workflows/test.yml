@@ -9,6 +9,7 @@ on:
 jobs:
   test:
     strategy:
+      fail-fast: false
       matrix:
         os: [ubuntu-latest, windows-latest]
         node-version: [20, 22]
@@ -23,11 +24,14 @@ jobs:
       - name: Install uv (for uvx detection tests)
         uses: astral-sh/setup-uv@v4
 
+      - name: Install dependencies
+        run: npm install
+
       - name: Build
-        run: npx esbuild src/index.ts --bundle --outfile=dist/server.js --target=esnext --format=esm --platform=node --external:@opencode-ai/plugin
+        run: npm run build
 
       - name: Test
         run: node --test test/setup.test.mjs
 
-      - name: Smoke test - verify uvx path resolution
+      - name: Smoke test (cross-platform)
         run: node test/smoke-mcp-path.mjs

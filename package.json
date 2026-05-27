@@ -32,5 +32,9 @@
     "commands/",
     "vendor/",
     "core/"
-  ]
+  ],
+  "devDependencies": {
+    "@opencode-ai/plugin": "^1.15.0",
+    "esbuild": "^0.25.0"
+  }
 }
