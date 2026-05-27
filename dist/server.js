@@ -1,7 +1,7 @@
 // src/index.ts
 import { tool } from "@opencode-ai/plugin";
 import { fileURLToPath } from "node:url";
-var VERSION = "1.0.6";
+var VERSION = "1.0.7";
 var MARKER_BEGIN = `<!-- roblox-opencode ${VERSION} BEGIN - managed block, edits inside will be overwritten -->`;
 var MARKER_END = "<!-- roblox-opencode END -->";
 var RECOMMENDED_MCPS = {
@@ -92,7 +92,7 @@ async function runSetup(directory, mcpServers) {
   let uvxFound = false;
   try {
     const { execSync } = await import("child_process");
-    execSync("command -v uvx", { stdio: "ignore" });
+    execSync("uvx --version", { stdio: "ignore" });
     uvxFound = true;
   } catch {
   }

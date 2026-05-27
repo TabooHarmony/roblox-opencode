@@ -3,7 +3,7 @@ import { tool } from "@opencode-ai/plugin"
 import { fileURLToPath } from "node:url"
 
 // IMPORTANT: Keep in sync with package.json "version" - mismatches cause duplicate AGENTS.md blocks on upgrade
-const VERSION = "1.0.6"
+const VERSION = "1.0.7"
 const MARKER_BEGIN = `<!-- roblox-opencode ${VERSION} BEGIN - managed block, edits inside will be overwritten -->`
 const MARKER_END = "<!-- roblox-opencode END -->"
 
@@ -117,11 +117,11 @@ export async function runSetup(directory: string, mcpServers?: string[]) {
   const pkgDir = join(import.meta.dirname ?? fileURLToPath(new URL(".", import.meta.url)), "..")
   const projectDir = directory
 
-  // Detect uvx once upfront
+  // Detect uvx once upfront (cross-platform)
   let uvxFound = false
   try {
     const { execSync } = await import("child_process")
-    execSync("command -v uvx", { stdio: "ignore" })
+    execSync("uvx --version", { stdio: "ignore" })
     uvxFound = true
   } catch { /* uvx not installed */ }
 
