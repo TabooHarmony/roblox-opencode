@@ -105,10 +105,19 @@ async function runSetup(directory, mcpServers) {
   const pkgDir = join(import.meta.dirname ?? fileURLToPath(new URL(".", import.meta.url)), "..");
   const projectDir = directory;
   let uvxFound = false;
+  let uvxPath = "uvx";
   try {
     const { execSync } = await import("child_process");
     execSync("uvx --version", { stdio: "ignore" });
     uvxFound = true;
+    try {
+      const os = await import("os");
+      const isWin = os.platform() === "win32";
+      const which = isWin ? "where uvx" : "which uvx";
+      const resolved = execSync(which, { encoding: "utf-8" }).trim().split(/\r?\n/)[0];
+      if (resolved) uvxPath = resolved;
+    } catch {
+    }
   } catch {
   }
   const configPath = join(projectDir, "opencode.json");
@@ -191,9 +200,10 @@ async function runSetup(directory, mcpServers) {
         for (const name of mcpServers) {
           const def = RECOMMENDED_MCPS[name];
           if (def) {
+            const command = def.command.map((c) => c === "uvx" ? uvxPath : c);
             mcp[name] = {
               type: "local",
-              command: def.command,
+              command,
               enabled: true
             };
           }

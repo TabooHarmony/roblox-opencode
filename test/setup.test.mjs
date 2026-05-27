@@ -133,7 +133,8 @@ test("runSetup with selected MCPs writes them to opencode.json", async () => {
     assert.equal(config.mcp["code-analysis"], undefined, "Should not have code-analysis MCP")
 
     // Verify MCP structure
-    assert.deepEqual(config.mcp["roblox-docs"].command, ["uvx", "mcp-roblox-docs"])
+    assert.ok(config.mcp["roblox-docs"].command[0].endsWith("uvx") || config.mcp["roblox-docs"].command[0] === "uvx", "First arg should be uvx or full path to uvx")
+    assert.equal(config.mcp["roblox-docs"].command[1], "mcp-roblox-docs")
     assert.equal(config.mcp["roblox-docs"].type, "local")
     assert.equal(config.mcp["roblox-docs"].enabled, true)
   } finally {
@@ -151,7 +152,8 @@ test("runSetup with code-analysis MCP writes tree-sitter config", async () => {
 
     const config = JSON.parse(readFileSync(join(dir, "opencode.json"), "utf-8"))
     assert.ok(config.mcp["code-analysis"], "Should have code-analysis MCP")
-    assert.deepEqual(config.mcp["code-analysis"].command, ["uvx", "mcp-server-tree-sitter"])
+    assert.ok(config.mcp["code-analysis"].command[0].endsWith("uvx") || config.mcp["code-analysis"].command[0] === "uvx", "First arg should be uvx or full path to uvx")
+    assert.equal(config.mcp["code-analysis"].command[1], "mcp-server-tree-sitter")
     assert.equal(config.mcp["code-analysis"].type, "local")
     assert.equal(config.mcp["code-analysis"].enabled, true)
   } finally {
