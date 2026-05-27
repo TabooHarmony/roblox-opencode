@@ -82,7 +82,7 @@ Copied to your project on setup. No Wally required.
 
 | Command | What it does |
 |---------|--------------|
-| `/setup-game` | One-time project config: skills, vendor, LSP, AGENTS.md |
+| `/setup-game` | One-time project config: skills, vendor, LSP, MCP servers, AGENTS.md |
 | `/sync-check` | Verify Script Sync is working correctly |
 
 ## How it works
@@ -91,18 +91,21 @@ Copied to your project on setup. No Wally required.
 2. You run `/setup-game` once per project
 3. Setup copies skills + vendor libs to `.opencode/`, writes LSP config, generates `.luaurc` aliases, and injects a core block into `AGENTS.md`
 4. Setup also detects your environment and recommends MCP servers (Roblox API docs, web search, code analysis). You pick which ones to install — no forced dependencies.
-5. After that, the plugin is dormant. The skills do all the work.
+5. After that, the plugin handles updates automatically. When the plugin version changes, skills and vendor libs refresh on next OpenCode restart.
 
 The AI loads relevant skills on-demand based on your prompt. Ask it to build a shop and it pulls in `roblox-gui-fusion`. Ask it to review security and it loads `roblox-code-review` with the networking lens.
 
 ## Prerequisites
 
 - [OpenCode](https://opencode.ai)
-- [Roblox Studio](https://www.roblox.com/create) with Script Sync and MCP server enabled
+- [Roblox Studio](https://www.roblox.com/create) with Script Sync enabled
+- `uvx` (optional, for MCP servers like Roblox API docs and web search)
 
 ## Update
 
-Update the version in `opencode.json`, restart OpenCode, and run `/setup-game` again to refresh skills and vendor libs. Content outside managed markers in `AGENTS.md` is preserved.
+The plugin auto-syncs on version change. Just restart OpenCode — skills, vendor libs, and AGENTS.md refresh automatically. Content outside managed markers in `AGENTS.md` is preserved.
+
+To force a refresh: run `/setup-game` again.
 
 ## Contributors
 
