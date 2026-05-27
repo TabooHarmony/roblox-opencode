@@ -1,5 +1,6 @@
 <p align="center">
   <img src="https://img.shields.io/badge/Roblox-OpenCode-blue?style=for-the-badge&logo=roblox&logoColor=white" alt="roblox-opencode" />
+   [BETA]
 </p>
 
 <p align="center">
