@@ -1,0 +1,33 @@
+name: Test
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  test:
+    strategy:
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+        node-version: [20, 22]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node-version }}
+
+      - name: Install uv (for uvx detection tests)
+        uses: astral-sh/setup-uv@v4
+
+      - name: Build
+        run: npx esbuild src/index.ts --bundle --outfile=dist/server.js --target=esnext --format=esm --platform=node --external:@opencode-ai/plugin
+
+      - name: Test
+        run: node --test test/setup.test.mjs
+
+      - name: Smoke test - verify uvx path resolution
+        run: node test/smoke-mcp-path.mjs
