@@ -23,7 +23,9 @@
   },
   "scripts": {
     "build": "esbuild src/index.ts --bundle --outfile=dist/server.js --target=esnext --format=esm --platform=node --external:@opencode-ai/plugin",
-    "prepare": "node -e \"\""
+    "prepare": "node -e \"\"",
+    "prepublishOnly": "cp README.md README.github.md && cp npm-README.md README.md",
+    "postpublish": "mv README.github.md README.md"
   },
   "files": [
     "dist/",
